@@ -1,0 +1,41 @@
+@import "@fontsource/cairo/400.css";
+@import "@fontsource/cairo/500.css";
+@import "@fontsource/cairo/600.css";
+@import "@fontsource/cairo/700.css";
+
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+
+@import "tailwindcss";
+@import "@fontsource/cairo/900.css";
+@theme {
+    --color-brand-navy: #0E2340;
+    --color-brand-navy-dark: #091729;
+
+    --color-brand-gold: #C9963A;
+    --color-brand-gold-dark: #B8892E;
+
+    --color-surface-soft: #F7F8FA;
+    --color-surface-card: #F4F7FB;
+
+    --color-text-primary: #152033;
+    --color-text-muted: #667085;
+    --color-text-secondary: #607080;
+
+    --color-border-soft: #E5E7EB;
+    --color-border-card: #DDE4ED;
+
+    --font-arabic: "Cairo", sans-serif;
+    --font-latin: "Inter", sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Cairo", sans-serif;
+    background: #ffffff;
+    color: #152033;
+}
