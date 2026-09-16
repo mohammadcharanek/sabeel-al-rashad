@@ -58,4 +58,72 @@ class HomepageSetting extends SingletonSetting
     {
         return data_get($this->section_visibility, $section, true) !== false;
     }
+
+    public function sectionUrl(string $section): ?string
+    {
+        if (! in_array($section, self::SECTIONS, true) || ! $this->isSectionVisible($section)) {
+            return null;
+        }
+
+        return '#'.match ($section) {
+            'hero' => 'home',
+            'intro' => 'about',
+            'admissions-cta' => 'admissions',
+            default => $section,
+        };
+    }
+
+    public function linkUrl(string $attribute, ?string $fallback = null): ?string
+    {
+        $url = parent::linkUrl($attribute);
+
+        if ($url === null) {
+            return $fallback;
+        }
+
+        $parts = parse_url($url);
+        $home = parse_url(route('home'));
+
+        if (isset($parts['fragment'])
+            && strtolower($parts['host']) === strtolower($home['host'])
+            && ($parts['port'] ?? null) === ($home['port'] ?? null)
+            && rtrim($parts['path'] ?? '', '/') === rtrim($home['path'] ?? '', '/')) {
+            $anchors = ['#contact', '#main-content'];
+
+            foreach (self::SECTIONS as $section) {
+                if ($anchor = $this->sectionUrl($section)) {
+                    $anchors[] = $anchor;
+                }
+            }
+
+            if (! in_array('#'.rawurldecode($parts['fragment']), $anchors, true)) {
+                return $fallback;
+            }
+        }
+
+        return $url;
+    }
+
+    /** @return list<array{label: string, href: string}> */
+    public function navigationLinks(): array
+    {
+        $links = [];
+
+        foreach ([
+            'hero' => 'الرئيسية',
+            'intro' => 'عن المدرسة',
+            'stages' => 'المراحل التعليمية',
+            'admissions-cta' => 'القبول والتسجيل',
+            'school-life' => 'الحياة المدرسية',
+            'news' => 'الأخبار',
+        ] as $section => $label) {
+            if ($href = $this->sectionUrl($section)) {
+                $links[] = ['label' => $label, 'href' => $href];
+            }
+        }
+
+        $links[] = ['label' => 'تواصل معنا', 'href' => '#contact'];
+
+        return $links;
+    }
 }

@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
-test('homepage renders the original Arabic content without creating settings', function () {
+test('homepage renders the default Arabic content without creating settings', function () {
     $this->get('/')
         ->assertOk()
         ->assertSee('ثانوية سبيل الرشاد')
-        ->assertSee('نصنع جيلاً واعياً')
+        ->assertSee('معًا نبني جيلًا')
+        ->assertSee('مبدعًا وواعيًا')
         ->assertSee('أ. إبراهيم العزنكي')
         ->assertSee('info@sabeelalrashad.com')
         ->assertSee('images/school-logo.jpg')
@@ -126,7 +127,8 @@ test('blank homepage fields retain the existing content', function (?string $val
     ]);
 
     $this->get('/')
-        ->assertSee('نصنع جيلاً واعياً')
+        ->assertSee('معًا نبني جيلًا')
+        ->assertSee('مبدعًا وواعيًا')
         ->assertSee('بيئة تعليمية متوازنة')
         ->assertSee('مرحباً بكم في')
         ->assertSee('ابدأ رحلة طفلك التعليمية معنا')

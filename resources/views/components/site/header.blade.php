@@ -1,244 +1,81 @@
-@props(['siteSettings'])
+@props(['siteSettings', 'homepageSettings'])
+
+@php
+    $navigationLinks = $homepageSettings->navigationLinks();
+@endphp
 
 <header
-    class="sticky top-0 z-50 border-b border-white/10
-           bg-brand-navy-dark/95 backdrop-blur-xl"
+    data-site-header
+    class="sticky top-0 z-50 border-b border-white/10 bg-brand-navy-dark/95 backdrop-blur-xl"
 >
     <div
         dir="ltr"
-        class="mx-auto flex h-[72px] w-full max-w-[1320px]
-               items-center justify-between px-4
-               sm:px-6 md:px-8 xl:h-[78px]"
+        class="mx-auto flex min-h-[72px] w-full max-w-[1440px] items-center justify-between gap-3 px-4 py-3 sm:px-6 md:px-8 xl:min-h-[78px]"
     >
-
-        {{-- School identity --}}
-        <a
-            href="{{ route('home') }}"
-            class="flex shrink-0 flex-row-reverse items-center gap-3
-                   md:flex-row"
-        >
+        <a href="{{ route('home') }}" class="flex min-w-0 flex-row-reverse items-center gap-2 md:flex-row">
             @if ($logoUrl = $siteSettings->imageUrl('logo', 'images/school-logo.jpg'))
                 <img
                     src="{{ $logoUrl }}"
                     alt="شعار {{ $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد') }}"
-                    class="h-11 w-11 shrink-0 rounded-full
-                           object-cover ring-2 ring-brand-gold-dark/35
-                           xl:h-12 xl:w-12"
+                    width="48"
+                    height="48"
+                    class="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-brand-gold-dark/35 xl:h-12 xl:w-12"
                 >
             @endif
-
-            <div class="whitespace-nowrap text-right">
-                <div
-                    class="text-[15px] font-black leading-tight
-                           text-white sm:text-[16px]"
-                >
+            <div class="min-w-0 text-right">
+                <div dir="rtl" class="text-[14px] font-black leading-relaxed text-white sm:text-[16px]">
                     {{ $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد') }}
                 </div>
-
-                <div
-                    dir="ltr"
-                    class="mt-0.5 text-[10px] font-medium
-                           tracking-[0.02em]
-                           text-brand-gold-dark sm:text-[11px]"
-                >
+                <div dir="ltr" class="mt-0.5 text-[9px] font-medium text-brand-gold sm:text-[10px]">
                     Sabeel Al Rashad Secondary School
                 </div>
             </div>
         </a>
 
-        {{-- Desktop navigation --}}
-        <nav
-            class="hidden items-center gap-7 whitespace-nowrap
-                   text-[14px] font-bold text-[#EBF0F7]
-                   xl:flex"
-            aria-label="التنقل الرئيسي"
-        >
-            <a
-                href="#home"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                الرئيسية
-            </a>
-
-            <a
-                href="#about"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                عن المدرسة
-            </a>
-
-            <a
-                href="#stages"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                المراحل التعليمية
-            </a>
-
-            <a
-                href="#admissions"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                القبول والتسجيل
-            </a>
-
-            <a
-                href="#school-life"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                الحياة المدرسية
-            </a>
-
-            <a
-                href="#news"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                الأخبار
-            </a>
-
-            <a
-                href="#contact"
-                class="relative py-2 transition
-                       hover:text-brand-gold
-                       after:absolute after:inset-x-0 after:-bottom-0.5
-                       after:h-[2px] after:scale-x-0 after:bg-brand-gold
-                       after:transition-transform hover:after:scale-x-100"
-            >
-                تواصل معنا
-            </a>
+        <nav class="hidden items-center gap-4 whitespace-nowrap text-[13px] font-bold text-[#EBF0F7] xl:flex" aria-label="التنقل الرئيسي">
+            @foreach ($navigationLinks as $link)
+                <a
+                    href="{{ $link['href'] }}"
+                    data-nav-link
+                    class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold aria-[current=location]:border-brand-gold aria-[current=location]:text-brand-gold"
+                >{{ $link['label'] }}</a>
+            @endforeach
         </nav>
 
-        {{-- Desktop actions --}}
-        <div class="hidden items-center gap-3 xl:flex">
-
-            <button
-                type="button"
-                class="inline-flex h-9 items-center justify-center
-                       rounded-full border border-white/10
-                       px-3 text-[12px] font-semibold
-                       text-white/70 transition
-                       hover:border-brand-gold/40
-                       hover:text-white"
-            >
-                AR | EN
-            </button>
-
-            <a
-                href="#admissions"
-                class="inline-flex h-[44px] items-center justify-center
-                       rounded-lg bg-brand-gold px-6
-                       text-[15px] font-bold text-brand-navy-dark
-                       transition hover:bg-white"
-            >
-                سجّل الآن
-            </a>
-
+        <div class="hidden shrink-0 items-center gap-3 xl:flex">
+            <span class="text-xs text-white/70" lang="ar">العربية</span>
+            @if ($admissionsUrl = $homepageSettings->sectionUrl('admissions-cta'))
+                <a href="{{ $admissionsUrl }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-gold px-5 py-2 text-sm font-bold text-brand-navy-dark transition hover:bg-white">
+                    سجّل الآن
+                </a>
+            @endif
         </div>
 
-        {{-- Tablet / Mobile actions --}}
-        <div class="flex items-center gap-3 xl:hidden">
-
-            <button
-                type="button"
-                class="inline-flex h-9 items-center justify-center
-                       rounded-full border border-white/10
-                       px-3 text-[11px] font-semibold
-                       text-white/70"
-            >
-                AR | EN
-            </button>
-
+        <div class="flex shrink-0 items-center xl:hidden">
             <details class="relative" data-header-menu>
                 <summary
-                    class="flex h-10 w-10 cursor-pointer
-                           list-none items-center justify-center
-                           rounded-lg border border-white/10
-                           text-white transition hover:bg-white/5
-                           focus-visible:outline-2
-                           focus-visible:outline-offset-2
-                           focus-visible:outline-brand-gold
-                           [&::-webkit-details-marker]:hidden"
-                    aria-label="القائمة"
+                    class="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-lg border border-white/10 text-white transition hover:bg-white/5 [&::-webkit-details-marker]:hidden"
+                    aria-label="القائمة الرئيسية"
                     aria-controls="compact-navigation"
                 >
-                    <img
-                        src="{{ asset('images/menu.svg') }}"
-                        alt=""
-                        width="22"
-                        height="22"
-                        class="h-[22px] w-[22px]"
-                    >
+                    <img src="{{ asset('images/menu.svg') }}" alt="" width="22" height="22" class="h-[22px] w-[22px]">
                 </summary>
-
                 <nav
                     id="compact-navigation"
                     dir="rtl"
-                    aria-label="التنقل الرئيسي"
-                    class="absolute left-0 top-[50px]
-                           max-h-[calc(100dvh-90px)]
-                           w-[250px] overflow-y-auto rounded-xl
-                           border border-white/10
-                           bg-brand-navy-dark shadow-2xl
-                           md:right-0 md:left-auto"
+                    aria-label="التنقل الرئيسي للجوال"
+                    class="absolute right-0 top-[52px] max-h-[calc(100dvh-100px)] w-[min(280px,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-white/10 bg-brand-navy-dark shadow-2xl"
                 >
                     <div class="flex flex-col p-2 text-right text-white">
-
-                        <a href="#home" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            الرئيسية
-                        </a>
-
-                        <a href="#about" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            عن المدرسة
-                        </a>
-
-                        <a href="#stages" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            المراحل التعليمية
-                        </a>
-
-                        <a href="#admissions" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            القبول والتسجيل
-                        </a>
-
-                        <a href="#school-life" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            الحياة المدرسية
-                        </a>
-
-                        <a href="#news" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            الأخبار
-                        </a>
-
-                        <a href="#contact" class="rounded-lg px-4 py-3 hover:bg-white/5">
-                            تواصل معنا
-                        </a>
-
+                        @foreach ($navigationLinks as $link)
+                            <a href="{{ $link['href'] }}" data-nav-link class="rounded-lg px-4 py-3 hover:bg-white/5 aria-[current=location]:bg-white/10 aria-[current=location]:text-brand-gold">
+                                {{ $link['label'] }}
+                            </a>
+                        @endforeach
+                        <span class="border-t border-white/10 px-4 py-3 text-xs text-white/60" lang="ar">العربية</span>
                     </div>
                 </nav>
             </details>
-
         </div>
-
     </div>
 </header>

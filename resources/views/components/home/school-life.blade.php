@@ -140,22 +140,17 @@
 
         <div class="mt-8 flex justify-center">
 
-            <a
-                href="#"
+            <span
                 class="inline-flex h-[47px]
                        items-center justify-center
                        rounded-full
                        border border-white/45
                        px-7
                        text-[15px] font-semibold
-                       text-white
-                       transition
-                       hover:border-brand-gold
-                       hover:bg-brand-gold
-                       hover:text-brand-navy-dark"
+                       text-white/70"
             >
-                اكتشف الحياة المدرسية
-            </a>
+                معرض الصور غير متاح حالياً
+            </span>
 
         </div>
 

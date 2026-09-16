@@ -4,7 +4,7 @@
     $socialImage = $siteSettings->imageUrl('social_image') ?? $homepageSettings->imageUrl('hero_image_desktop', 'images/hero-desktop.jpg');
 @endphp
 
-<x-layouts.app :site-settings="$siteSettings" :title="$title" :description="$description" :social-image="$socialImage">
+<x-layouts.app :site-settings="$siteSettings" :homepage-settings="$homepageSettings" :title="$title" :description="$description" :social-image="$socialImage">
     @if ($homepageSettings->isSectionVisible('hero'))
         <x-home.hero :homepage-settings="$homepageSettings" :site-settings="$siteSettings" />
     @endif

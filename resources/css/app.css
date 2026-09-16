@@ -32,10 +32,30 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 7rem;
 }
 
 body {
     font-family: "Cairo", sans-serif;
     background: #ffffff;
     color: #152033;
+}
+
+main,
+footer {
+    overflow-wrap: anywhere;
+}
+
+a:focus-visible,
+summary:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--color-brand-gold);
+    outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
 }

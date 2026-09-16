@@ -1,4 +1,4 @@
-@props(['siteSettings', 'title' => null, 'description' => null, 'socialImage' => null])
+@props(['siteSettings', 'homepageSettings', 'title' => null, 'description' => null, 'socialImage' => null])
 
 @php
     $title ??= $siteSettings->text('meta_title_ar', $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد'));
@@ -38,13 +38,15 @@
 
 <body class="min-h-screen bg-white font-arabic text-text-primary antialiased">
 
-    <x-site.header :site-settings="$siteSettings" />
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:p-4 focus:text-brand-navy">انتقل إلى المحتوى</a>
 
-    <main>
+    <x-site.header :site-settings="$siteSettings" :homepage-settings="$homepageSettings" />
+
+    <main id="main-content" tabindex="-1">
         {{ $slot }}
     </main>
 
-    <x-site.footer :site-settings="$siteSettings" />
+    <x-site.footer :site-settings="$siteSettings" :homepage-settings="$homepageSettings" />
 
 </body>
 </html>

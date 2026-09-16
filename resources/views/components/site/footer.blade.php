@@ -1,4 +1,4 @@
-@props(['siteSettings'])
+@props(['siteSettings', 'homepageSettings'])
 
 <footer
     id="contact"
@@ -164,24 +164,12 @@
                     روابط سريعة
                 </h3>
 
-                <nav class="mt-4 space-y-3">
-
-                    @php
-                        $footerLinks = [
-                            ['الرئيسية', '#home'],
-                            ['عن المدرسة', '#about'],
-                            ['المراحل التعليمية', '#stages'],
-                            ['القبول والتسجيل', '#admissions'],
-                            ['الحياة المدرسية', '#school-life'],
-                            ['الأخبار', '#news'],
-                            ['تواصل معنا', '#contact'],
-                        ];
-                    @endphp
-
-                    @foreach ($footerLinks as [$label, $href])
+                <nav class="mt-4" aria-label="روابط سريعة">
+                    @foreach ($homepageSettings->navigationLinks() as $link)
                         <a
-                            href="{{ $href }}"
-                            class="flex items-center gap-2
+                            href="{{ $link['href'] }}"
+                            data-nav-link
+                            class="flex min-h-11 items-center gap-2
                                    text-[12px]
                                    text-white/50
                                    transition
@@ -194,7 +182,7 @@
                                 ‹
                             </span>
 
-                            <span>{{ $label }}</span>
+                            <span>{{ $link['label'] }}</span>
                         </a>
                     @endforeach
 
@@ -306,16 +294,16 @@
                            leading-[21px]
                            text-white/45"
                 >
-                    اشترك ليصلك آخر أخبار وفعاليات المدرسة
-                    إلى بريدك مباشرة.
+                    الاشتراك في النشرة الإخبارية غير متاح حالياً.
                 </p>
 
                 {{-- Visual only until newsletter backend is implemented --}}
-                <div class="mt-4 flex gap-2">
+                <fieldset disabled aria-label="الاشتراك في النشرة الإخبارية غير متاح حالياً" class="mt-4 flex min-w-0 gap-2 opacity-50">
 
                     <input
                         type="email"
                         name="email"
+                        aria-label="البريد الإلكتروني للنشرة الإخبارية"
                         placeholder="بريدك الإلكتروني"
                         class="h-[42px] min-w-0 flex-1
                                rounded-lg border
@@ -336,13 +324,14 @@
                                px-4
                                text-[12px] font-bold
                                text-white
-                               transition
-                               hover:bg-brand-gold"
+                               cursor-not-allowed"
                     >
                         اشترك
                     </button>
 
-                </div>
+                </fieldset>
+
+                <x-site.whatsapp-link :site-settings="$siteSettings" class="mt-6" />
 
             </div>
 

@@ -89,7 +89,7 @@
 
                 <a
                     href="{{ $homepageSettings->linkUrl('admissions_primary_url', '#contact') }}"
-                    class="inline-flex h-[46px]
+                    class="inline-flex min-h-[46px] py-3
                            w-full items-center justify-center
                            rounded-lg
                            bg-brand-gold
@@ -99,14 +99,14 @@
                            transition
                            hover:bg-brand-gold-dark
                            hover:text-white
-                           sm:w-[125px]"
+                           sm:w-auto"
                 >
                     {{ $homepageSettings->text('admissions_primary_label', 'سجّل الآن') }}
                 </a>
 
                 <a
                     href="{{ $homepageSettings->linkUrl('admissions_secondary_url', '#contact') }}"
-                    class="inline-flex h-[46px]
+                    class="inline-flex min-h-[46px] py-3
                            w-full items-center justify-center
                            rounded-lg
                            border-[1.5px]
@@ -118,12 +118,14 @@
                            hover:border-white
                            hover:bg-white
                            hover:text-brand-navy
-                           sm:w-[136px]"
+                           sm:w-auto"
                 >
                     {{ $homepageSettings->text('admissions_secondary_label', 'تواصل معنا') }}
                 </a>
 
             </div>
+
+            <x-site.whatsapp-link :site-settings="$siteSettings" class="mt-5" />
 
         </div>
 

@@ -1,4 +1,5 @@
 <section
+    id="statistics"
     class="bg-brand-navy py-12 md:py-16"
     aria-label="إحصائيات المدرسة"
 >
@@ -17,28 +18,28 @@
                 value="+٥٠٠"
                 label="طالب وطالبة"
                 icon="users"
-                class="mx-auto w-[160px] lg:w-[190px]"
+                class="mx-auto w-full max-w-[160px] lg:max-w-[190px]"
             />
 
             <x-home.statistic-item
                 value="+٤٠"
                 label="معلماً ومعلمة"
                 icon="teachers"
-                class="mx-auto w-[160px] lg:w-[190px]"
+                class="mx-auto w-full max-w-[160px] lg:max-w-[190px]"
             />
 
             <x-home.statistic-item
                 value="+٤٠"
                 label="عاماً من الخبرة"
                 icon="history"
-                class="mx-auto w-[160px] lg:w-[190px]"
+                class="mx-auto w-full max-w-[160px] lg:max-w-[190px]"
             />
 
             <x-home.statistic-item
                 value="+٢٠"
                 label="نشاطاً تعليمياً"
                 icon="activity"
-                class="mx-auto w-[160px] lg:w-[190px]"
+                class="mx-auto w-full max-w-[160px] lg:max-w-[190px]"
             />
 
         </div>

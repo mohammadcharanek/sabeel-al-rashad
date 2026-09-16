@@ -57,4 +57,22 @@ class SiteSetting extends SingletonSetting
             'whatsapp_enabled' => 'boolean',
         ];
     }
+
+    public function whatsappUrl(): ?string
+    {
+        if (! $this->whatsapp_enabled) {
+            return null;
+        }
+
+        $number = preg_replace('/[\s().-]+/u', '', $this->text('whatsapp_number'));
+        $number = preg_replace('/^(?:\+|00)/', '', $number);
+
+        if (! preg_match('/^[1-9][0-9]{7,14}$/D', $number)) {
+            return null;
+        }
+
+        $message = trim($this->text('whatsapp_message_ar'));
+
+        return 'https://wa.me/'.$number.($message !== '' ? '?text='.rawurlencode($message) : '');
+    }
 }

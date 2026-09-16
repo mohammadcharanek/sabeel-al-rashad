@@ -211,9 +211,10 @@
 
                 </div>
 
+                @if ($stagesUrl = $homepageSettings->sectionUrl('stages'))
                 <div class="mt-9">
                     <a
-                        href="#stages"
+                        href="{{ $stagesUrl }}"
                         class="inline-flex h-[46px]
                                items-center justify-center
                                rounded-lg bg-brand-navy
@@ -225,6 +226,7 @@
                         تعرف على مدرستنا
                     </a>
                 </div>
+                @endif
 
             </div>
 
