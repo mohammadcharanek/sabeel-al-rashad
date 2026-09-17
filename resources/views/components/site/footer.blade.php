@@ -51,6 +51,12 @@
                             {{ $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد') }}
                         </h2>
 
+                        <p
+                            class="mt-0.5 text-[12px]
+                                   text-brand-gold-dark/80"
+                        >
+                            منذ ١٩٨٥
+                        </p>
                     </div>
 
                 </div>
@@ -161,7 +167,7 @@
                 <nav class="mt-4" aria-label="روابط سريعة">
                     @foreach ($homepageSettings->navigationLinks() as $link)
                         <a
-                            href="{{ $link['href'] }}"
+                            href="{{ request()->routeIs('home') ? $link['href'] : route('home').$link['href'] }}"
                             data-nav-link
                             class="flex min-h-11 items-center gap-2
                                    text-[12px]
@@ -179,6 +185,7 @@
                             <span>{{ $link['label'] }}</span>
                         </a>
                     @endforeach
+                    <a href="{{ route('gallery.index') }}" class="flex min-h-11 items-center gap-2 text-[12px] text-white/70 transition hover:text-brand-gold" @if(request()->routeIs('gallery.index')) aria-current="page" @endif><span aria-hidden="true">‹</span><span>معرض الصور</span></a>
 
                 </nav>
 

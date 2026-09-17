@@ -22,8 +22,9 @@ test('homepage shows only active gallery images in featured and configured order
 
     $this->get('/')->assertOk()
         ->assertViewHas('galleryItems', fn ($items) => $items->modelKeys() === [$first->id, $second->id])
-        ->assertSeeInOrder(['أولى', 'ثانية'])
-        ->assertDontSee('مخفية')->assertDontSee('مفقودة');
+        ->assertSee('أولى')
+        ->assertDontSee('ثانية')->assertDontSee('مخفية')->assertDontSee('مفقودة')
+        ->assertSee('عرض معرض الصور الكامل');
 });
 
 test('gallery text is escaped and unsafe paths are not rendered', function () {

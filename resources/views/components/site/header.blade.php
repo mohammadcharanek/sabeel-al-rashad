@@ -35,17 +35,18 @@
         <nav class="hidden items-center gap-4 whitespace-nowrap text-[13px] font-bold text-[#EBF0F7] xl:flex" aria-label="التنقل الرئيسي">
             @foreach ($navigationLinks as $link)
                 <a
-                    href="{{ $link['href'] }}"
+                    href="{{ request()->routeIs('home') ? $link['href'] : route('home').$link['href'] }}"
                     data-nav-link
                     class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold aria-[current=location]:border-brand-gold aria-[current=location]:text-brand-gold"
                 >{{ $link['label'] }}</a>
             @endforeach
+            <a href="{{ route('gallery.index') }}" class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold" @if(request()->routeIs('gallery.index')) aria-current="page" @endif>معرض الصور</a>
         </nav>
 
         <div class="hidden shrink-0 items-center gap-3 xl:flex">
             <span class="text-xs text-white/70" lang="ar">العربية</span>
             @if ($admissionsUrl = $homepageSettings->sectionUrl('admissions-cta'))
-                <a href="{{ $admissionsUrl }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-gold px-5 py-2 text-sm font-bold text-brand-navy-dark transition hover:bg-white">
+                <a href="{{ request()->routeIs('home') ? $admissionsUrl : route('home').$admissionsUrl }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-gold px-5 py-2 text-sm font-bold text-brand-navy-dark transition hover:bg-white">
                     سجّل الآن
                 </a>
             @endif
@@ -68,10 +69,11 @@
                 >
                     <div class="flex flex-col p-2 text-right text-white">
                         @foreach ($navigationLinks as $link)
-                            <a href="{{ $link['href'] }}" data-nav-link class="rounded-lg px-4 py-3 hover:bg-white/5 aria-[current=location]:bg-white/10 aria-[current=location]:text-brand-gold">
+                            <a href="{{ request()->routeIs('home') ? $link['href'] : route('home').$link['href'] }}" data-nav-link class="rounded-lg px-4 py-3 hover:bg-white/5 aria-[current=location]:bg-white/10 aria-[current=location]:text-brand-gold">
                                 {{ $link['label'] }}
                             </a>
                         @endforeach
+                        <a href="{{ route('gallery.index') }}" class="rounded-lg px-4 py-3 hover:bg-white/5" @if(request()->routeIs('gallery.index')) aria-current="page" @endif>معرض الصور</a>
                         <span class="border-t border-white/10 px-4 py-3 text-xs text-white/60" lang="ar">العربية</span>
                     </div>
                 </nav>
