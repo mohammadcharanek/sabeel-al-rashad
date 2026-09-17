@@ -6,12 +6,12 @@
 
 <article
     {{ $attributes->class([
-        'mx-auto flex h-[188px] w-full max-w-[326px] flex-col',
+        'mx-auto flex min-h-[188px] w-full max-w-[326px] flex-col',
         'rounded-2xl border border-[#DDE4ED]',
         'bg-[#F4F7FB] p-7 text-right',
         'transition duration-300',
         'hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(14,35,64,0.08)]',
-        'md:h-[203px] md:max-w-none',
+        'md:min-h-[203px] md:max-w-none',
     ]) }}
 >
 

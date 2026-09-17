@@ -22,7 +22,7 @@
     @endif
 
     @if ($homepageSettings->isSectionVisible('why-us'))
-        <x-home.why-us :site-settings="$siteSettings" />
+        <x-home.why-us :site-settings="$siteSettings" :features="$features" />
     @endif
 
     @if ($homepageSettings->isSectionVisible('school-life'))

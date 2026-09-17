@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\EducationalStage;
 use App\Models\Event;
+use App\Models\Feature;
 use App\Models\HomepageSetting;
 use App\Models\NewsPost;
 use App\Models\SiteSetting;
@@ -49,12 +50,19 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
+        $features = Feature::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         return view('pages.home', [
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
             'newsPosts' => $newsPosts,
             'events' => $events,
             'stages' => $stages,
+            'features' => $features,
             'statistics' => $statistics,
         ]);
     }
