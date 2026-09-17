@@ -9,12 +9,12 @@
 
 <article
     {{ $attributes->class([
-        'group relative h-[310px] overflow-hidden rounded-[14px]',
+        'group relative min-h-[310px] overflow-hidden rounded-[14px]',
         'border border-[#E5E7EB] bg-white',
         'px-[27px] pb-7 pt-[38px]',
         'transition duration-300',
         'hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(14,35,64,0.10)]',
-        'md:h-[318px]',
+        'md:min-h-[318px]',
     ]) }}
 >
     {{-- Gold top accent --}}

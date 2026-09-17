@@ -14,7 +14,7 @@
     @endif
 
     @if ($homepageSettings->isSectionVisible('statistics'))
-        <x-home.statistics />
+        <x-home.statistics :statistics="$statistics" />
     @endif
 
     @if ($homepageSettings->isSectionVisible('stages'))

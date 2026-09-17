@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\HomepageSetting;
 use App\Models\NewsPost;
 use App\Models\SiteSetting;
+use App\Models\Statistic;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -42,12 +43,19 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
+        $statistics = Statistic::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         return view('pages.home', [
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
             'newsPosts' => $newsPosts,
             'events' => $events,
             'stages' => $stages,
+            'statistics' => $statistics,
         ]);
     }
 }

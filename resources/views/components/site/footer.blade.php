@@ -51,12 +51,6 @@
                             {{ $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد') }}
                         </h2>
 
-                        <p
-                            class="mt-0.5 text-[12px]
-                                   text-brand-gold-dark/80"
-                        >
-                            منذ ١٩٨٥
-                        </p>
                     </div>
 
                 </div>

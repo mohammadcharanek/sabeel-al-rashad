@@ -7,36 +7,12 @@
         <x-home.section-title
             eyebrow="آراء أولياء الأمور"
             title="ماذا يقول أولياء الأمور؟"
-            description="ثقة الأسر في مدرستنا هي أكبر شهادة على جودة تعليمنا"
+            description="نحرص على مشاركة التجارب الموثقة بعد موافقة أصحابها"
         />
 
-        <div
-            class="mt-10 grid gap-4
-                   md:mt-12 md:grid-cols-2 md:gap-9
-                   lg:grid-cols-3 lg:gap-[60px]"
-        >
-
-            <x-home.testimonial-card
-                quote="سيتم إضافة شهادة حقيقية معتمدة من أحد أولياء الأمور هنا."
-                name="ولي أمر"
-                role="شهادة قيد الاعتماد"
-            />
-
-            <x-home.testimonial-card
-                quote="سيتم استبدال هذا النص بتجربة حقيقية لأحد أولياء الأمور بعد موافقة المدرسة."
-                name="ولي أمر"
-                role="شهادة قيد الاعتماد"
-            />
-
-            <x-home.testimonial-card
-                quote="يمكن لإدارة المدرسة إضافة شهادات أولياء الأمور المعتمدة من لوحة التحكم لاحقاً."
-                name="ولي أمر"
-                role="شهادة قيد الاعتماد"
-                class="md:col-span-2 md:w-[334px] md:justify-self-center
-                       lg:col-span-1 lg:w-auto"
-            />
-
-        </div>
+        <p class="mx-auto mt-10 max-w-[620px] rounded-2xl border border-border-soft bg-white px-6 py-8 text-center text-sm leading-8 text-text-muted md:mt-12">
+            ستُعرض شهادات أولياء الأمور هنا بعد اعتمادها وموافقتهم على نشرها.
+        </p>
 
     </div>
 </section>

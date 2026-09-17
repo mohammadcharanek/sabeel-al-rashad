@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\EducationalStage;
 use App\Models\Event;
 use App\Models\NewsPost;
+use App\Models\Statistic;
 use App\Models\User;
 use App\Policies\CmsContentPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -27,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::define('manage-settings', fn (User $user): bool => $user->is_admin);
 
-        foreach ([NewsPost::class, Event::class, EducationalStage::class] as $model) {
+        foreach ([NewsPost::class, Event::class, EducationalStage::class, Statistic::class] as $model) {
             Gate::policy($model, CmsContentPolicy::class);
         }
     }
