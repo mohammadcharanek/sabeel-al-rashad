@@ -26,7 +26,7 @@
     @endif
 
     @if ($homepageSettings->isSectionVisible('school-life'))
-        <x-home.school-life :site-settings="$siteSettings" />
+        <x-home.school-life :site-settings="$siteSettings" :gallery-items="$galleryItems" />
     @endif
 
     @if ($homepageSettings->isSectionVisible('news'))

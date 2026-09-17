@@ -1,159 +1,41 @@
-@props(['siteSettings'])
+@props(['siteSettings', 'galleryItems'])
 
-<section
-    id="school-life"
-    class="bg-brand-navy py-16 md:py-24"
->
-
+<section id="school-life" class="bg-brand-navy py-16 md:py-24">
     <div class="mx-auto max-w-[1200px] px-4 md:px-8">
-
         <x-home.section-title
             eyebrow="معرض الصور"
             :title="'الحياة في '.($siteSettings->exists ? $siteSettings->text('school_name_ar', 'سبيل الرشاد') : 'سبيل الرشاد')"
-            description="اكتشف عالماً من التعلم والنشاط والإبداع في بيئتنا المدرسية المتميزة"
+            description="صور من الحياة المدرسية"
             :dark="true"
         />
 
-        {{-- Mobile gallery --}}
-        <div class="mt-8 space-y-3 md:hidden">
-
-            <x-home.school-life-image
-                src="images/school-life/labs.jpg"
-                alt="المختبرات العلمية"
-                class="h-[210px]"
-            />
-
-            <div class="grid grid-cols-2 gap-3">
-
-                <x-home.school-life-image
-                    src="images/school-life/sports.jpg"
-                    alt="الأنشطة الرياضية"
-                    class="h-[190px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/events.jpg"
-                    alt="الفعاليات المدرسية"
-                    class="h-[190px]"
-                />
-
+        @if ($galleryItems->isEmpty())
+            <p class="mt-8 rounded-xl border border-white/20 px-6 py-8 text-center text-white/80">
+                ستُعرض صور الحياة المدرسية هنا بعد اعتمادها ونشرها.
+            </p>
+        @else
+            {{-- A single ordered collection powers all three breakpoints. --}}
+            <div class="mt-8 grid grid-cols-2 gap-3 md:mt-12 lg:grid-cols-4">
+                @foreach ($galleryItems as $item)
+                    <figure @class([
+                        'group relative overflow-hidden rounded-xl bg-white/5',
+                        'col-span-2 h-[260px] md:h-[350px] lg:row-span-2 lg:h-[628px]' => $loop->first,
+                        'h-[190px] md:h-[260px] lg:h-[306px]' => ! $loop->first,
+                    ])>
+                        <img
+                            src="{{ $item->imageUrl() }}"
+                            alt="{{ $item->alt_text ?: ($item->title ?: 'صورة من الحياة المدرسية') }}"
+                            loading="lazy"
+                            class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                        >
+                        @if (filled($item->caption))
+                            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 text-sm text-white">
+                                {{ $item->caption }}
+                            </figcaption>
+                        @endif
+                    </figure>
+                @endforeach
             </div>
-
-            <x-home.school-life-image
-                src="images/school-life/science.jpg"
-                alt="الأنشطة العلمية"
-                class="h-[190px]"
-            />
-
-            <x-home.school-life-image
-                src="images/school-life/classrooms.jpg"
-                alt="الصفوف الدراسية"
-                class="h-[150px]"
-            />
-
-        </div>
-
-        {{-- Tablet gallery --}}
-        <div class="mt-12 hidden md:block lg:hidden">
-
-            <x-home.school-life-image
-                src="images/school-life/labs.jpg"
-                alt="المختبرات العلمية"
-                class="h-[250px]"
-            />
-
-            <div class="mt-3 grid grid-cols-2 gap-3">
-
-                <x-home.school-life-image
-                    src="images/school-life/sports.jpg"
-                    alt="الأنشطة الرياضية"
-                    class="h-[160px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/events.jpg"
-                    alt="الفعاليات المدرسية"
-                    class="h-[160px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/science.jpg"
-                    alt="الأنشطة العلمية"
-                    class="h-[150px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/classrooms.jpg"
-                    alt="الصفوف الدراسية"
-                    class="h-[150px]"
-                />
-
-            </div>
-
-        </div>
-
-        {{-- Desktop gallery --}}
-        <div
-            class="mt-12 hidden
-                   grid-cols-[1fr_1fr]
-                   gap-3
-                   lg:grid"
-        >
-
-            {{-- Large image --}}
-            <x-home.school-life-image
-                src="images/school-life/labs.jpg"
-                alt="المختبرات العلمية"
-                class="h-[628px]"
-            />
-
-            {{-- Four smaller images --}}
-            <div class="grid grid-cols-2 gap-3">
-
-                <x-home.school-life-image
-                    src="images/school-life/sports.jpg"
-                    alt="الأنشطة الرياضية"
-                    class="h-[306px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/events.jpg"
-                    alt="الفعاليات المدرسية"
-                    class="h-[306px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/science.jpg"
-                    alt="الأنشطة العلمية"
-                    class="h-[310px]"
-                />
-
-                <x-home.school-life-image
-                    src="images/school-life/classrooms.jpg"
-                    alt="الصفوف الدراسية"
-                    class="h-[310px]"
-                />
-
-            </div>
-
-        </div>
-
-        <div class="mt-8 flex justify-center">
-
-            <span
-                class="inline-flex h-[47px]
-                       items-center justify-center
-                       rounded-full
-                       border border-white/45
-                       px-7
-                       text-[15px] font-semibold
-                       text-white/70"
-            >
-                معرض الصور غير متاح حالياً
-            </span>
-
-        </div>
-
+        @endif
     </div>
-
 </section>

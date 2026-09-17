@@ -124,7 +124,7 @@ test('unfinished controls cannot be mistaken for functional links or forms', fun
         ->assertDontSee('href=""', false)
         ->assertDontSee('AR | EN')
         ->assertSee('الاشتراك في النشرة الإخبارية غير متاح حالياً.')
-        ->assertSee('معرض الصور غير متاح حالياً')
+        ->assertSee('ستُعرض صور الحياة المدرسية هنا بعد اعتمادها ونشرها.')
         ->getContent();
 
     $document = new DOMDocument;

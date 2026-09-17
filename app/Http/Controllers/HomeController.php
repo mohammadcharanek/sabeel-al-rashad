@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EducationalStage;
 use App\Models\Event;
 use App\Models\Feature;
+use App\Models\GalleryItem;
 use App\Models\HomepageSetting;
 use App\Models\NewsPost;
 use App\Models\SiteSetting;
@@ -56,6 +57,16 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
+        $galleryItems = GalleryItem::query()
+            ->where('is_active', true)
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (GalleryItem $item) => $item->imageUrl() !== null)
+            ->take(5)
+            ->values();
+
         return view('pages.home', [
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
@@ -63,6 +74,7 @@ class HomeController extends Controller
             'events' => $events,
             'stages' => $stages,
             'features' => $features,
+            'galleryItems' => $galleryItems,
             'statistics' => $statistics,
         ]);
     }
