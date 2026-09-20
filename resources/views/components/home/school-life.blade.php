@@ -63,5 +63,9 @@
             </div>
         @endif
 
+        <div class="mt-6 text-center">
+            <a href="{{ route('videos.index') }}" class="inline-flex min-h-11 items-center rounded-lg border border-white/40 px-6 py-3 font-bold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-4 focus-visible:outline-brand-gold">زيارة معرض الفيديو</a>
+        </div>
+
     </div>
 </section>

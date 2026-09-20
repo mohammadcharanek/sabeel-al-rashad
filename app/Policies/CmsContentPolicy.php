@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\MediaFolder;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,6 +29,11 @@ class CmsContentPolicy
     }
 
     public function delete(User $user, Model $record): bool
+    {
+        return $user->is_admin && (! $record instanceof MediaFolder || ! $record->hasMedia());
+    }
+
+    public function reorder(User $user): bool
     {
         return $user->is_admin;
     }

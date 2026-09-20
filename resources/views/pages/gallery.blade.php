@@ -1,21 +1,26 @@
 @php
     $schoolName = $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد');
-    $title = 'معرض الصور | '.$schoolName;
+    $title = ($folder?->title ?? 'معرض الصور').' | '.$schoolName;
     $description = 'صور الحياة المدرسية والأنشطة والفعاليات في '.$schoolName;
 @endphp
 
 <x-layouts.app :site-settings="$siteSettings" :homepage-settings="$homepageSettings" :title="$title" :description="$description">
     <div class="bg-brand-navy px-4 py-14 text-center text-white md:py-20">
-        <nav aria-label="مسار التنقل" class="mb-5 text-sm text-white/70"><a href="{{ route('home') }}" class="underline underline-offset-4 hover:text-white">الرئيسية</a> <span aria-hidden="true"> / </span> معرض الصور</nav>
-        <h1 class="text-3xl font-black md:text-5xl">معرض الصور</h1>
+        <nav aria-label="مسار التنقل" class="mb-5 text-sm text-white/70"><a href="{{ route('home') }}" class="underline underline-offset-4 hover:text-white">الرئيسية</a> <span aria-hidden="true"> / </span> <a href="{{ route('gallery.index') }}" class="underline underline-offset-4 hover:text-white">معرض الصور</a> @if($folder) <span aria-hidden="true"> / </span> {{ $folder->title }} @endif</nav>
+        <h1 class="text-3xl font-black md:text-5xl">{{ $folder?->title ?? 'معرض الصور' }}</h1>
         <p class="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/75">لقطات من الأنشطة والفعاليات والحياة المدرسية في {{ $schoolName }}.</p>
+        <a href="{{ route('videos.index') }}" class="mt-5 inline-flex min-h-11 items-center font-bold text-brand-gold underline underline-offset-4">معرض الفيديو</a>
     </div>
 
     <section class="mx-auto max-w-[1200px] px-4 py-12 md:px-8 md:py-16" aria-label="صور الحياة المدرسية">
+        <x-site.media-folders :folders="$folders" :folder="$folder" index-route="gallery.index" show-route="gallery.show" />
+        @if (! $folder && $galleryItems->isNotEmpty())
+            <h2 class="mb-6 text-2xl font-bold text-brand-navy">صور غير مصنفة</h2>
+        @endif
         @if ($galleryItems->isEmpty())
-            <p class="rounded-2xl border border-border-soft bg-[#F4F7FB] p-10 text-center text-text-muted">ستُعرض صور الحياة المدرسية هنا بعد اعتمادها ونشرها.</p>
+            <p class="rounded-2xl border border-border-soft bg-[#F4F7FB] p-10 text-center text-text-muted">{{ $folder ? 'لا توجد صور معتمدة ومنشورة في هذا المجلد بعد.' : ($folders->isNotEmpty() ? 'اختر مجلداً لمشاهدة الصور المنشورة.' : 'ستُعرض صور الحياة المدرسية هنا بعد اعتمادها ونشرها.') }}</p>
         @else
-            <div id="gallery-slideshow" data-gallery-slideshow class="overflow-hidden rounded-2xl border border-border-soft bg-brand-navy text-white" aria-roledescription="عرض شرائح" aria-label="صور المدرسة">
+            <div id="gallery-slideshow" data-gallery-slideshow tabindex="0" class="overflow-hidden rounded-2xl border border-border-soft bg-brand-navy text-white" aria-roledescription="عرض شرائح" aria-label="صور المدرسة">
                 <div class="relative">
                     @foreach ($galleryItems as $item)
                         <figure data-gallery-slide @if (! $loop->first) hidden @endif class="relative">

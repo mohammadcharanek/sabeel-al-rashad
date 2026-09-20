@@ -58,7 +58,7 @@ class HomeController extends Controller
             ->get();
 
         $galleryItems = GalleryItem::query()
-            ->where('is_active', true)
+            ->published()
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->orderBy('id')

@@ -185,7 +185,8 @@
                             <span>{{ $link['label'] }}</span>
                         </a>
                     @endforeach
-                    <a href="{{ route('gallery.index') }}" class="flex min-h-11 items-center gap-2 text-[12px] text-white/70 transition hover:text-brand-gold" @if(request()->routeIs('gallery.index')) aria-current="page" @endif><span aria-hidden="true">‹</span><span>معرض الصور</span></a>
+                    <a href="{{ route('gallery.index') }}" class="flex min-h-11 items-center gap-2 text-[12px] text-white/70 transition hover:text-brand-gold" @if(request()->routeIs('gallery.*')) aria-current="page" @endif><span aria-hidden="true">‹</span><span>معرض الصور</span></a>
+                    <a href="{{ route('videos.index') }}" class="flex min-h-11 items-center gap-2 text-[12px] text-white/70 transition hover:text-brand-gold" @if(request()->routeIs('videos.*')) aria-current="page" @endif><span aria-hidden="true">‹</span><span>معرض الفيديو</span></a>
 
                 </nav>
 

@@ -40,7 +40,8 @@
                     class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold aria-[current=location]:border-brand-gold aria-[current=location]:text-brand-gold"
                 >{{ $link['label'] }}</a>
             @endforeach
-            <a href="{{ route('gallery.index') }}" class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold" @if(request()->routeIs('gallery.index')) aria-current="page" @endif>معرض الصور</a>
+            <a href="{{ route('gallery.index') }}" class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold" @if(request()->routeIs('gallery.*')) aria-current="page" @endif>معرض الصور</a>
+            <a href="{{ route('videos.index') }}" class="inline-flex min-h-11 items-center border-b-2 border-transparent py-2 transition hover:text-brand-gold" @if(request()->routeIs('videos.*')) aria-current="page" @endif>معرض الفيديو</a>
         </nav>
 
         <div class="hidden shrink-0 items-center gap-3 xl:flex">
@@ -73,7 +74,8 @@
                                 {{ $link['label'] }}
                             </a>
                         @endforeach
-                        <a href="{{ route('gallery.index') }}" class="rounded-lg px-4 py-3 hover:bg-white/5" @if(request()->routeIs('gallery.index')) aria-current="page" @endif>معرض الصور</a>
+                        <a href="{{ route('gallery.index') }}" class="rounded-lg px-4 py-3 hover:bg-white/5" @if(request()->routeIs('gallery.*')) aria-current="page" @endif>معرض الصور</a>
+                        <a href="{{ route('videos.index') }}" class="rounded-lg px-4 py-3 hover:bg-white/5" @if(request()->routeIs('videos.*')) aria-current="page" @endif>معرض الفيديو</a>
                         <span class="border-t border-white/10 px-4 py-3 text-xs text-white/60" lang="ar">العربية</span>
                     </div>
                 </nav>
