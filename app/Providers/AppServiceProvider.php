@@ -9,6 +9,7 @@ use App\Models\GalleryItem;
 use App\Models\MediaFolder;
 use App\Models\NewsPost;
 use App\Models\Statistic;
+use App\Models\Testimonial;
 use App\Models\User;
 use App\Models\Video;
 use App\Policies\CmsContentPolicy;
@@ -32,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::define('manage-settings', fn (User $user): bool => $user->is_admin);
 
-        foreach ([NewsPost::class, Event::class, EducationalStage::class, Statistic::class, Feature::class, GalleryItem::class, MediaFolder::class, Video::class] as $model) {
+        foreach ([NewsPost::class, Event::class, EducationalStage::class, Statistic::class, Feature::class, GalleryItem::class, MediaFolder::class, Video::class, Testimonial::class] as $model) {
             Gate::policy($model, CmsContentPolicy::class);
         }
     }

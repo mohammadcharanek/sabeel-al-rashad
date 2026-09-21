@@ -10,6 +10,7 @@ use App\Models\HomepageSetting;
 use App\Models\NewsPost;
 use App\Models\SiteSetting;
 use App\Models\Statistic;
+use App\Models\Testimonial;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -67,6 +68,13 @@ class HomeController extends Controller
             ->take(5)
             ->values();
 
+        $testimonials = Testimonial::query()
+            ->published()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->limit(3)
+            ->get();
+
         return view('pages.home', [
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
@@ -76,6 +84,7 @@ class HomeController extends Controller
             'features' => $features,
             'galleryItems' => $galleryItems,
             'statistics' => $statistics,
+            'testimonials' => $testimonials,
         ]);
     }
 }

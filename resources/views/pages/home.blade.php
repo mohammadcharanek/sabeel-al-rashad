@@ -42,7 +42,7 @@
     @endif
 
     @if ($homepageSettings->isSectionVisible('testimonials'))
-        <x-home.testimonials />
+        <x-home.testimonials :testimonials="$testimonials" />
     @endif
 
     @if ($homepageSettings->isSectionVisible('admissions-cta'))
