@@ -54,7 +54,7 @@
                     {{-- Gold pill --}}
                     <div class="mt-2">
                         <span
-                            class="inline-flex min-h-[26px] items-center rounded-full border border-brand-gold-dark/25 bg-brand-gold-dark/10 px-3 text-[12px] font-bold tracking-[0.04em] text-brand-gold-dark"
+                            class="inline-flex min-h-[26px] items-center rounded-full border border-brand-gold-dark/25 bg-brand-gold-dark/10 px-3 text-[12px] font-bold tracking-[0.04em] text-[#D4A843]"
                         >
                             {{ $homepageSettings->text('principal_eyebrow', 'كلمة مدير المدرسة') }}
                         </span>

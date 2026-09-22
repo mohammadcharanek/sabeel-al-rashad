@@ -21,6 +21,7 @@
     next?.addEventListener('click', () => show(current + 1));
     thumbnails.forEach((thumb, i) => thumb.addEventListener('click', () => {
         show(i);
+        gallery.focus({ preventScroll: true });
         gallery.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     }));
     gallery.addEventListener('keydown', event => {

@@ -48,7 +48,7 @@
                        px-4
                        text-[12px] font-bold
                        tracking-[0.04em]
-                       text-brand-gold-dark"
+                       text-brand-gold"
             >
                 {{ $homepageSettings->text('admissions_eyebrow', 'القبول والتسجيل') }}
             </span>

@@ -123,7 +123,7 @@
                            bg-brand-gold-dark/10
                            px-3 py-1
                            text-[12px] font-bold
-                           tracking-wide text-brand-gold-dark"
+                           tracking-wide text-text-gold"
                 >
                     {{ $homepageSettings->text('intro_eyebrow', 'تأسست عام ١٩٨٥') }}
                 </span>
@@ -173,7 +173,7 @@
                     >
                         <div
                             class="text-[12px] font-bold
-                                   text-brand-gold-dark"
+                                   text-text-gold"
                         >
                             رؤيتنا
                         </div>
@@ -195,7 +195,7 @@
                     >
                         <div
                             class="text-[12px] font-bold
-                                   text-brand-gold-dark"
+                                   text-text-gold"
                         >
                             رسالتنا
                         </div>

@@ -12,7 +12,7 @@
                rounded-full bg-[#F7EAD1]
                px-4 py-1
                text-[13px] font-semibold
-               text-brand-gold-dark"
+               text-text-gold"
     >
         {{ $eyebrow }}
     </span>

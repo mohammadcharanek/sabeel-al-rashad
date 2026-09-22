@@ -22,6 +22,7 @@
     --color-text-primary: #152033;
     --color-text-muted: #667085;
     --color-text-secondary: #607080;
+    --color-text-gold: #805B1B;
 
     --color-border-soft: #E5E7EB;
     --color-border-card: #DDE4ED;
@@ -49,7 +50,8 @@ footer {
 a:focus-visible,
 summary:focus-visible,
 button:focus-visible,
-input:focus-visible {
+input:focus-visible,
+[data-gallery-slideshow]:focus-visible {
     outline: 3px solid var(--color-brand-gold);
     outline-offset: 4px;
 }

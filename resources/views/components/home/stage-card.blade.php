@@ -27,7 +27,7 @@
     <span
         class="absolute left-[27px] top-[25px]
                text-[40px] font-bold leading-none
-               text-[#D7DCE3]"
+               text-text-muted"
     >
         {{ $number }}
     </span>
@@ -110,9 +110,9 @@
         @if ($href)
             <a
                 href="{{ $href }}"
-                class="mt-5 inline-flex
+                class="mt-5 inline-flex min-h-11 min-w-11 items-center
                        text-[14px] font-semibold
-                       text-brand-gold-dark
+                       text-text-gold
                        transition
                        group-hover:text-brand-navy"
             >

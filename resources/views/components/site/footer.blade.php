@@ -53,7 +53,7 @@
 
                         <p
                             class="mt-0.5 text-[12px]
-                                   text-brand-gold-dark/80"
+                                   text-brand-gold"
                         >
                             منذ ١٩٨٥
                         </p>
@@ -76,7 +76,7 @@
                         <a
                             href="{{ $socialUrl }}"
                             aria-label="Facebook"
-                            class="flex h-9 w-9
+                            class="flex h-11 w-11
                                    items-center justify-center
                                    rounded-lg border
                                    border-white/10
@@ -95,7 +95,7 @@
                         <a
                             href="{{ $socialUrl }}"
                             aria-label="Instagram"
-                            class="flex h-9 w-9
+                            class="flex h-11 w-11
                                    items-center justify-center
                                    rounded-lg border
                                    border-white/10
@@ -131,7 +131,7 @@
                         <a
                             href="{{ $socialUrl }}"
                             aria-label="YouTube"
-                            class="flex h-9 w-9
+                            class="flex h-11 w-11
                                    items-center justify-center
                                    rounded-lg border
                                    border-white/10
@@ -203,7 +203,7 @@
 
                     <a
                         href="tel:{{ $siteSettings->text('primary_phone', '+96108630336') }}"
-                        class="flex items-center gap-3
+                        class="flex min-h-11 items-center gap-3
                                text-[12px] font-semibold
                                text-white/80
                                transition
@@ -227,14 +227,14 @@
                     </a>
 
                     @if (filled($siteSettings->secondary_phone))
-                        <a href="tel:{{ $siteSettings->secondary_phone }}" class="flex items-center gap-3 text-[12px] text-white/65 transition hover:text-brand-gold">
+                        <a href="tel:{{ $siteSettings->secondary_phone }}" class="flex min-h-11 items-center gap-3 text-[12px] text-white/65 transition hover:text-brand-gold">
                             <span dir="ltr">{{ $siteSettings->secondary_phone }}</span>
                         </a>
                     @endif
 
                     <a
                         href="mailto:{{ $siteSettings->text('contact_email', 'info@sabeelalrashad.com') }}"
-                        class="flex items-center gap-3
+                        class="flex min-h-11 items-center gap-3
                                text-[12px] text-white/65
                                transition
                                hover:text-brand-gold"
@@ -356,7 +356,7 @@
 
                 <p
                     class="text-[12px]
-                           text-white/30"
+                           text-white/60"
                 >
                     © {{ date('Y') }} {{ $siteSettings->text('school_name_ar', 'ثانوية سبيل الرشاد') }} — جميع الحقوق محفوظة
                 </p>
@@ -366,7 +366,7 @@
                     class="font-latin
                            text-[12px]
                            tracking-[0.02em]
-                           text-white/30"
+                           text-white/60"
                 >
                     since 1985 · S.R.S lighting up the educational path
                 </p>

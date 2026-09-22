@@ -7,9 +7,9 @@
 <x-layouts.app :site-settings="$siteSettings" :homepage-settings="$homepageSettings" :title="$title" :description="$description">
     <div class="bg-brand-navy px-4 py-14 text-center text-white md:py-20">
         <nav aria-label="مسار التنقل" class="mb-5 text-sm text-white/70">
-            <a href="{{ route('home') }}" class="underline underline-offset-4 hover:text-white">الرئيسية</a>
+            <a href="{{ route('home') }}" class="inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 hover:text-white">الرئيسية</a>
             <span aria-hidden="true"> / </span>
-            <a href="{{ route('videos.index') }}" class="underline underline-offset-4 hover:text-white">معرض الفيديو</a>
+            <a href="{{ route('videos.index') }}" class="inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 hover:text-white">معرض الفيديو</a>
             @if ($folder) <span aria-hidden="true"> / </span> {{ $folder->title }} @endif
         </nav>
         <h1 class="text-3xl font-black md:text-5xl">{{ $folder?->title ?? 'معرض الفيديو' }}</h1>

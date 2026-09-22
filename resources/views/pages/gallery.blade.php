@@ -6,7 +6,7 @@
 
 <x-layouts.app :site-settings="$siteSettings" :homepage-settings="$homepageSettings" :title="$title" :description="$description">
     <div class="bg-brand-navy px-4 py-14 text-center text-white md:py-20">
-        <nav aria-label="مسار التنقل" class="mb-5 text-sm text-white/70"><a href="{{ route('home') }}" class="underline underline-offset-4 hover:text-white">الرئيسية</a> <span aria-hidden="true"> / </span> <a href="{{ route('gallery.index') }}" class="underline underline-offset-4 hover:text-white">معرض الصور</a> @if($folder) <span aria-hidden="true"> / </span> {{ $folder->title }} @endif</nav>
+        <nav aria-label="مسار التنقل" class="mb-5 text-sm text-white/70"><a href="{{ route('home') }}" class="inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 hover:text-white">الرئيسية</a> <span aria-hidden="true"> / </span> <a href="{{ route('gallery.index') }}" class="inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 hover:text-white">معرض الصور</a> @if($folder) <span aria-hidden="true"> / </span> {{ $folder->title }} @endif</nav>
         <h1 class="text-3xl font-black md:text-5xl">{{ $folder?->title ?? 'معرض الصور' }}</h1>
         <p class="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/75">لقطات من الأنشطة والفعاليات والحياة المدرسية في {{ $schoolName }}.</p>
         <a href="{{ route('videos.index') }}" class="mt-5 inline-flex min-h-11 items-center font-bold text-brand-gold underline underline-offset-4">معرض الفيديو</a>
@@ -37,7 +37,7 @@
                 @if($galleryItems->count() > 1)
                     <div class="flex items-center justify-between gap-3 px-4 py-4 md:px-6">
                         <button type="button" data-gallery-prev class="min-h-11 rounded-lg border border-white/40 px-4 py-2 font-bold hover:bg-white/10" aria-label="الصورة السابقة">السابق</button>
-                        <span data-gallery-counter class="text-sm" role="status" aria-live="polite">1 / {{ $galleryItems->count() }}</span>
+                        <span data-gallery-counter dir="ltr" class="text-sm" role="status" aria-live="polite">1 / {{ $galleryItems->count() }}</span>
                         <button type="button" data-gallery-next class="min-h-11 rounded-lg border border-white/40 px-4 py-2 font-bold hover:bg-white/10" aria-label="الصورة التالية">التالي</button>
                     </div>
                 @endif
