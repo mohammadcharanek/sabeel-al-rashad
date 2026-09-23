@@ -333,8 +333,6 @@
 
                 </fieldset>
 
-                <x-site.whatsapp-link :site-settings="$siteSettings" class="mt-6" />
-
             </div>
 
         </div>

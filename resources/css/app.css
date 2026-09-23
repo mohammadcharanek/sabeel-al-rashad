@@ -47,6 +47,14 @@ footer {
     overflow-wrap: anywhere;
 }
 
+html:has([data-whatsapp-contact]) {
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+body:has([data-header-menu][open]) [data-whatsapp-contact] {
+    visibility: hidden;
+}
+
 a:focus-visible,
 summary:focus-visible,
 button:focus-visible,

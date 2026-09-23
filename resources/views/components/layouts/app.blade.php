@@ -48,5 +48,7 @@
 
     <x-site.footer :site-settings="$siteSettings" :homepage-settings="$homepageSettings" />
 
+    <x-site.whatsapp-link :site-settings="$siteSettings" />
+
 </body>
 </html>

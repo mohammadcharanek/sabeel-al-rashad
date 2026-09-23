@@ -103,6 +103,43 @@ test('enabling WhatsApp requires a number', function () {
     $this->assertDatabaseCount('site_settings', 0);
 });
 
+test('administrators configure and disable the public WhatsApp contact through settings', function () {
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(SiteSettings::class)
+        ->fillForm([
+            'whatsapp_enabled' => true,
+            'whatsapp_number' => '00 961 (70) 123-456',
+            'whatsapp_message_ar' => 'مرحبا & التسجيل؟',
+            'whatsapp_message_en' => 'Stored English message',
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('site_settings', [
+        'whatsapp_enabled' => true,
+        'whatsapp_number' => '+96170123456',
+        'whatsapp_message_ar' => 'مرحبا & التسجيل؟',
+        'whatsapp_message_en' => 'Stored English message',
+    ]);
+    $this->get('/')
+        ->assertSee('href="https://wa.me/96170123456?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%20%26%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%9F"', false)
+        ->assertDontSee('Stored English message');
+
+    Livewire::test(SiteSettings::class)
+        ->assertSchemaStateSet([
+            'whatsapp_enabled' => true,
+            'whatsapp_number' => '+96170123456',
+            'whatsapp_message_ar' => 'مرحبا & التسجيل؟',
+        ])
+        ->fillForm(['whatsapp_enabled' => false])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('site_settings', ['whatsapp_enabled' => false, 'whatsapp_number' => '+96170123456']);
+    $this->get('/')->assertDontSee('data-whatsapp-contact', false);
+});
+
 test('unsafe images are rejected without creating settings', function () {
     Storage::fake('public');
     $this->actingAs(User::factory()->admin()->create());

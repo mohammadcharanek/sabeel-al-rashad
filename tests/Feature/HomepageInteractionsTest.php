@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\HomepageSetting;
+use App\Models\MediaFolder;
 use App\Models\SiteSetting;
 
 test('disabled sections have no navigation or fallback action pointing to them', function (string $section, string $anchor) {
@@ -89,22 +90,58 @@ test('WhatsApp uses a normalized international number and safely encoded Arabic 
     $document = new DOMDocument;
     @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
     $xpath = new DOMXPath($document);
-    expect($xpath->query('//a[starts-with(@href,"https://wa.me/") and @target="_blank" and @rel="noopener noreferrer"]')->length)->toBe(2);
+    expect($xpath->query('//a[starts-with(@href,"https://wa.me/") and @target="_blank" and @rel="noopener noreferrer"]')->length)->toBe(1);
 })->with(['+96170123456', '00961 70 123 456', '+961 (70) 123-456', '96170123456']);
 
 test('WhatsApp omits a blank message and remains available with admissions hidden', function () {
-    SiteSetting::factory()->create(['whatsapp_enabled' => true, 'whatsapp_number' => '+96170123456', 'whatsapp_message_ar' => '   ']);
+    SiteSetting::factory()->create([
+        'whatsapp_enabled' => true,
+        'whatsapp_number' => '+96170123456',
+        'whatsapp_message_ar' => '   ',
+        'whatsapp_message_en' => 'English message is not used',
+    ]);
     HomepageSetting::query()->create(['section_visibility' => ['admissions-cta' => false]]);
 
     $this->get('/')
         ->assertSee('href="https://wa.me/96170123456"', false)
-        ->assertDontSee('https://wa.me/96170123456?text=', false);
+        ->assertDontSee('https://wa.me/96170123456?text=', false)
+        ->assertDontSee('English message is not used');
 });
+
+test('public pages render exactly one accessible WhatsApp contact link', function (string $path) {
+    SiteSetting::factory()->create([
+        'whatsapp_enabled' => true,
+        'whatsapp_number' => '+96170123456',
+    ]);
+
+    $html = $this->get($path)->assertOk()->getContent();
+
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+    $xpath = new DOMXPath($document);
+    $links = $xpath->query('//a[starts-with(@href,"https://wa.me/")]');
+
+    expect($links->length)->toBe(1);
+    $link = $links->item(0);
+    expect($link->hasAttribute('data-whatsapp-contact'))->toBeTrue();
+    expect($link->getAttribute('aria-label'))->toBe('تواصل مع المدرسة عبر واتساب (يفتح في نافذة جديدة)');
+    expect($link->getAttribute('target'))->toBe('_blank');
+    expect($link->getAttribute('rel'))->toBe('noopener noreferrer');
+    expect(trim($link->textContent))->toContain('واتساب');
+})->with([
+    'home' => '/',
+    'gallery index' => '/gallery',
+    'video index' => '/videos',
+    'gallery folder' => fn (): string => route('gallery.show', MediaFolder::factory()->published()->create()),
+    'video folder' => fn (): string => route('videos.show', MediaFolder::factory()->video()->published()->create()),
+]);
 
 test('WhatsApp is hidden when disabled or its number is invalid', function (bool $enabled, ?string $number) {
     SiteSetting::factory()->create(['whatsapp_enabled' => $enabled, 'whatsapp_number' => $number]);
 
-    $this->get('/')->assertDontSee('https://wa.me/', false);
+    $this->get('/')
+        ->assertDontSee('https://wa.me/', false)
+        ->assertDontSee('data-whatsapp-contact', false);
 })->with([
     'disabled' => [false, '+96170123456'],
     'missing' => [true, null],

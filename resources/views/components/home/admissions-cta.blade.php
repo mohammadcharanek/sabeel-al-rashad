@@ -125,8 +125,6 @@
 
             </div>
 
-            <x-site.whatsapp-link :site-settings="$siteSettings" class="mt-5" />
-
         </div>
 
     </div>

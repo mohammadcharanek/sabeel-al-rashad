@@ -65,8 +65,10 @@ class SiteSettings extends Page
                         ->mutateStateForValidationUsing(fn (?string $state): ?string => SettingsFields::normalizePhone($state))
                         ->dehydrateStateUsing(fn (?string $state): ?string => SettingsFields::normalizePhone($state))
                         ->regex('/^\\+[1-9][0-9]{7,14}$/D'),
-                    SettingsFields::paragraph('whatsapp_message_ar', 'الرسالة الافتراضية بالعربية'),
-                    SettingsFields::paragraph('whatsapp_message_en', 'الرسالة الافتراضية بالإنجليزية'),
+                    SettingsFields::paragraph('whatsapp_message_ar', 'الرسالة الافتراضية بالعربية')
+                        ->helperText('تظهر في المحادثة عند الضغط على زر واتساب. يمكن تركها فارغة.'),
+                    SettingsFields::paragraph('whatsapp_message_en', 'الرسالة الافتراضية بالإنجليزية')
+                        ->helperText('محفوظة للاستخدام لاحقاً؛ زر الموقع الحالي يستخدم الرسالة العربية.'),
                 ]),
                 Section::make('مدير المدرسة')->columns(2)->schema([
                     SettingsFields::text('principal_name_ar', 'اسم المدير بالعربية'),
