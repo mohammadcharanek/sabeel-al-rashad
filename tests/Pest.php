@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StudentApplication;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +48,13 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/** @param array<string, mixed> $overrides */
+function registrationData(array $overrides = []): array
+{
+    return StudentApplication::factory()->raw(array_replace([
+        'guardian_name' => 'محمد حسن',
+        'guardian_phone' => '03 123 456',
+    ], $overrides));
 }

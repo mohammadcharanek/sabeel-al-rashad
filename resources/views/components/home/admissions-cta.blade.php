@@ -88,7 +88,7 @@
             >
 
                 <a
-                    href="{{ $homepageSettings->linkUrl('admissions_primary_url', '#contact') }}"
+                    href="{{ $homepageSettings->linkUrl('admissions_primary_url', route('registration.create')) }}"
                     class="inline-flex min-h-[46px] py-3
                            w-full items-center justify-center
                            rounded-lg

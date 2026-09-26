@@ -47,7 +47,7 @@
         <div class="hidden shrink-0 items-center gap-3 xl:flex">
             <span class="text-xs text-white/70" lang="ar">العربية</span>
             @if ($admissionsUrl = $homepageSettings->sectionUrl('admissions-cta'))
-                <a href="{{ request()->routeIs('home') ? $admissionsUrl : route('home').$admissionsUrl }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-gold px-5 py-2 text-sm font-bold text-brand-navy-dark transition hover:bg-white">
+                <a href="{{ route('registration.create') }}" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand-gold px-5 py-2 text-sm font-bold text-brand-navy-dark transition hover:bg-white">
                     سجّل الآن
                 </a>
             @endif
@@ -76,6 +76,7 @@
                         @endforeach
                         <a href="{{ route('gallery.index') }}" class="rounded-lg px-4 py-3 hover:bg-white/5" @if(request()->routeIs('gallery.*')) aria-current="page" @endif>معرض الصور</a>
                         <a href="{{ route('videos.index') }}" class="rounded-lg px-4 py-3 hover:bg-white/5" @if(request()->routeIs('videos.*')) aria-current="page" @endif>معرض الفيديو</a>
+                        <a href="{{ route('registration.create') }}" class="rounded-lg px-4 py-3 font-bold text-brand-gold hover:bg-white/5" @if(request()->routeIs('registration.*')) aria-current="page" @endif>طلب تسجيل طالب</a>
                         <span class="border-t border-white/10 px-4 py-3 text-xs text-white/60" lang="ar">العربية</span>
                     </div>
                 </nav>
