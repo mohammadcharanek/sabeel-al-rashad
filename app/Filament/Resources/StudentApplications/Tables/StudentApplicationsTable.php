@@ -17,13 +17,14 @@ class StudentApplicationsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('educationalStage'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['educationalStage', 'educationalGrade']))
             ->defaultSort('submitted_at', 'desc')
             ->columns([
                 TextColumn::make('reference_number')->label('رقم المرجع')->searchable()->copyable(),
                 TextColumn::make('student_name')->label('اسم الطالب')->searchable(),
                 TextColumn::make('guardian_name')->label('ولي الأمر')->searchable(),
                 TextColumn::make('guardian_phone')->label('الهاتف')->searchable(),
+                TextColumn::make('educationalGrade.name_ar')->label('الصف المطلوب')->placeholder('الصف غير محدد في الطلب القديم'),
                 TextColumn::make('educationalStage.title')->label('المرحلة التعليمية'),
                 TextColumn::make('registration_type')->label('حالة الطالب')
                     ->formatStateUsing(fn (string $state): string => StudentApplication::REGISTRATION_TYPES[$state] ?? 'غير محددة')->badge(),
@@ -33,6 +34,10 @@ class StudentApplicationsTable
                     }),
                 IconColumn::make('document_attached')->label('مستند مرفق')->boolean()
                     ->state(fn (StudentApplication $record): bool => filled($record->document_path)),
+                TextColumn::make('interview_requirement')->label('المقابلة')
+                    ->state(fn (StudentApplication $record): string => match ($record->interview_required) {
+                        true => 'مطلوب', false => 'غير مطلوب', null => 'غير محدد',
+                    }),
                 TextColumn::make('exam_requirement')->label('امتحان الدخول')
                     ->state(fn (StudentApplication $record): string => match ($record->entrance_exam_required) {
                         true => 'مطلوب', false => 'غير مطلوب', null => 'يلزم تصنيف المرحلة',
@@ -55,6 +60,13 @@ class StudentApplicationsTable
                     ->queries(
                         true: fn (Builder $query): Builder => StudentApplication::filterByEntranceExamRequirement($query, true),
                         false: fn (Builder $query): Builder => StudentApplication::filterByEntranceExamRequirement($query, false),
+                    ),
+                SelectFilter::make('educational_grade_id')->label('الصف المطلوب')->relationship('educationalGrade', 'name_ar'),
+                TernaryFilter::make('interview_required')->label('المقابلة')
+                    ->trueLabel('مطلوب')->falseLabel('غير مطلوب')->placeholder('الكل')
+                    ->queries(
+                        true: fn (Builder $query): Builder => StudentApplication::filterByRequirement($query, 'interview_required', true),
+                        false: fn (Builder $query): Builder => StudentApplication::filterByRequirement($query, 'interview_required', false),
                     ),
                 SelectFilter::make('status')->label('الحالة')->options(StudentApplication::STATUSES),
                 SelectFilter::make('educational_stage_id')->label('المرحلة التعليمية')->relationship('educationalStage', 'title'),

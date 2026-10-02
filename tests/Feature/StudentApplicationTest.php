@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
 use App\Models\SiteSetting;
 use App\Models\StudentApplication;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 test('guests see an Arabic registration form with only active stages and a homepage entry point', function () {
     $stage = EducationalStage::factory()->create(['title' => 'المرحلة الابتدائية']);
+    EducationalGrade::factory()->for($stage, 'educationalStage')->create();
     $inactive = EducationalStage::factory()->inactive()->create(['title' => 'مرحلة غير متاحة']);
 
     $this->get(route('registration.create'))
@@ -23,7 +25,7 @@ test('guests see an Arabic registration form with only active stages and a homep
 
 test('registration explains when no stage is available', function () {
     $this->get(route('registration.create'))
-        ->assertSee('لا توجد مراحل متاحة للتسجيل حالياً.')
+        ->assertSee('لا توجد صفوف متاحة للتسجيل حالياً.')
         ->assertDontSee('type="submit"', false);
 });
 
@@ -99,7 +101,7 @@ test('all required fields have Arabic validation messages', function () {
         ->assertSessionHasErrors([
             'student_name' => 'حقل اسم الطالب الثلاثي مطلوب.',
             'date_of_birth' => 'حقل تاريخ الميلاد مطلوب.',
-            'educational_stage_id' => 'حقل المرحلة التعليمية مطلوب.',
+            'educational_grade_id' => 'حقل الصف المطلوب مطلوب.',
             'guardian_name' => 'حقل اسم ولي الأمر مطلوب.',
             'guardian_phone' => 'حقل هاتف ولي الأمر مطلوب.',
         ]);
@@ -121,8 +123,8 @@ test('registration rejects invalid input without storing an application', functi
     'today birthday' => ['date_of_birth', '2026-09-26'],
     'invalid birthday' => ['date_of_birth', '2020-02-31'],
     'unparseable birthday' => ['date_of_birth', 'yesterday'],
-    'nonexistent stage' => ['educational_stage_id', 999999],
-    'invalid stage' => ['educational_stage_id', 'hello'],
+    'nonexistent stage' => ['educational_grade_id', 999999],
+    'invalid stage' => ['educational_grade_id', 'hello'],
     'long guardian name' => ['guardian_name', str_repeat('م', 151)],
     'phone letters' => ['guardian_phone', '03123456abc'],
     'short phone' => ['guardian_phone', '123'],
@@ -139,7 +141,7 @@ test('inactive stages cannot be submitted directly', function () {
     $stage = EducationalStage::factory()->inactive()->create();
 
     $this->post(route('registration.store'), registrationData(['educational_stage_id' => $stage->id]))
-        ->assertSessionHasErrors('educational_stage_id');
+        ->assertSessionHasErrors('educational_grade_id');
     $this->assertDatabaseCount('student_applications', 0);
 });
 

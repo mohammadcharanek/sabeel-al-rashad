@@ -101,26 +101,28 @@ const registrationForm = document.querySelector('[data-registration-form]');
 if (registrationForm) {
     const requirements = JSON.parse(registrationForm.dataset.requirements);
     const defaultRequirements = JSON.parse(registrationForm.dataset.defaultRequirements);
-    const stage = registrationForm.querySelector('#educational_stage_id');
+    const grade = registrationForm.querySelector('#educational_grade_id');
     const registrationType = registrationForm.querySelector('#registration_type');
     const documentInput = registrationForm.querySelector('#document');
     const documentLabel = registrationForm.querySelector('#document-requirement');
     const documentSummary = registrationForm.querySelector('[data-document-summary]');
+    const interviewSummary = registrationForm.querySelector('[data-interview-summary]');
     const examSummary = registrationForm.querySelector('[data-exam-summary]');
     const initialDocumentRequired = documentInput.required;
 
     const updateRequirements = () => {
-        const selected = requirements[stage.value]?.[registrationType.value];
+        const selected = requirements[grade.value]?.[registrationType.value];
         documentInput.required = selected?.document_required ?? initialDocumentRequired;
         documentInput.setAttribute('aria-required', String(documentInput.required));
         documentLabel.textContent = documentInput.required ? '(مطلوب)' : '(اختياري)';
         documentSummary.textContent = selected?.document_summary
             ?? defaultRequirements.document_summary;
+        interviewSummary.textContent = selected?.interview_summary ?? defaultRequirements.interview_summary;
         examSummary.textContent = selected?.exam_summary
             ?? defaultRequirements.exam_summary;
     };
 
-    stage.addEventListener('change', updateRequirements);
+    grade.addEventListener('change', updateRequirements);
     registrationType.addEventListener('change', updateRequirements);
     updateRequirements();
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
 use App\Models\StudentApplication;
 use Illuminate\Http\UploadedFile;
@@ -54,7 +55,6 @@ test('travelers and transferred school students require documents and exams desp
     'transferred primary' => ['primary', 'transferred_student'],
     'transferred intermediate' => ['intermediate', 'transferred_student'],
     'transferred secondary' => ['secondary', 'transferred_student'],
-    'traveler kindergarten' => ['kindergarten', 'traveler'],
     'traveler primary' => ['primary', 'traveler'],
     'traveler intermediate' => ['intermediate', 'traveler'],
     'traveler secondary' => ['secondary', 'traveler'],
@@ -82,35 +82,37 @@ test('registration rejects missing invalid and malformed registration types', fu
         ->assertSessionHasErrors('registration_type');
 
     $this->assertDatabaseCount('student_applications', 0);
-})->with(['missing' => null, 'generic new student' => 'new_student', 'unknown' => 'unknown', 'array' => [['traveler']]]);
+})->with(['missing' => null, 'unknown' => 'unknown', 'array' => [['traveler']]]);
 
 test('unclassified and unknown categories are hidden and rejected even for travelers', function (?string $category, string $type) {
-    $stage = EducationalStage::factory()->create(['category' => $category, 'title' => 'مرحلة غير مصنفة']);
-    EducationalStage::factory()->create();
+    $stage = EducationalStage::factory()->create(['title' => 'مرحلة غير مصنفة']);
+    $grade = EducationalGrade::factory()->for($stage, 'educationalStage')->create();
+    DB::table('educational_stages')->where('id', $stage->id)->update(['category' => $category]);
+    EducationalGrade::factory()->create();
 
     $this->get(route('registration.create'))->assertDontSee($stage->title);
     $this->post(route('registration.store'), registrationData([
-        'educational_stage_id' => $stage->id, 'registration_type' => $type,
-    ]))->assertSessionHasErrors('educational_stage_id');
+        'educational_grade_id' => $grade->id, 'registration_type' => $type,
+    ]))->assertSessionHasErrors('educational_grade_id');
 
     $this->assertDatabaseCount('student_applications', 0);
 })->with(['unclassified' => null, 'unknown category' => 'unknown'])->with(['current_student', 'transferred_student', 'traveler']);
 
 test('registration selection errors preserve accessible feedback without malformed input crashing the form', function () {
-    EducationalStage::factory()->create();
+    EducationalGrade::factory()->create();
     $response = $this->from(route('registration.create'))->post(route('registration.store'), registrationData([
-        'educational_stage_id' => ['1'], 'registration_type' => ['traveler'],
-    ]))->assertSessionHasErrors(['educational_stage_id', 'registration_type']);
+        'educational_grade_id' => ['1'], 'registration_type' => ['traveler'],
+    ]))->assertSessionHasErrors(['educational_grade_id', 'registration_type']);
 
     $this->withCookie(config('session.cookie'), $response->getCookie(config('session.cookie'))->getValue())
         ->get(route('registration.create'))->assertOk()
         ->assertSee('registration-type-help registration_type-error', false)
-        ->assertSee('aria-describedby="educational_stage_id-error"', false);
+        ->assertSee('aria-describedby="educational_grade_id-error"', false);
 });
 
 test('registration renders server generated requirements with live feedback and a no JavaScript explanation', function () {
-    $primary = EducationalStage::factory()->create(['category' => 'primary']);
-    $kindergarten = EducationalStage::factory()->create(['category' => 'kindergarten']);
+    $primary = EducationalGrade::factory()->create();
+    $kindergarten = EducationalGrade::factory()->for(EducationalStage::factory()->create(['category' => 'kindergarten']), 'educationalStage')->create(['code' => 'kg2']);
 
     $response = $this->get(route('registration.create'))
         ->assertSee('طالب منتقل من مدرسة أخرى إلى ثانوية سبيل الرشاد')
@@ -128,9 +130,9 @@ test('registration renders server generated requirements with live feedback and 
         ->assertSee('المستند المطلوب: إفادة من المدرسة أو الروضة السابقة.')
         ->assertSee('لا يخضع الطالب الحالي لامتحان دخول.')
         ->assertSee('المستند المطلوب: إفادة.')
-        ->assertDontSee('الإرفاق اختياري');
+        ->assertSee('يلزم إجراء مقابلة.');
 
-    expect($response->getContent())->toMatch('/<input[^>]*id="document"[^>]*\srequired(?:\s|>)/s');
+    expect($response->getContent())->toContain('name="educational_grade_id"');
 });
 
 test('required document feedback restores the chosen registration situation and server summary', function () {

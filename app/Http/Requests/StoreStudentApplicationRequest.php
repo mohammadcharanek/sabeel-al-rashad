@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\EducationalStage;
+use App\Models\EducationalGrade;
 use App\Models\StudentApplication;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -34,18 +35,26 @@ class StoreStudentApplicationRequest extends FormRequest
 
     public function rules(): array
     {
-        $stageId = $this->input('educational_stage_id');
+        $gradeId = $this->input('educational_grade_id');
         $registrationType = $this->input('registration_type');
-        $category = is_scalar($stageId)
-            ? EducationalStage::query()->whereKey($stageId)->value('category')
-            : null;
-        $requirements = StudentApplication::registrationRequirements($category, is_string($registrationType) ? $registrationType : null);
+        $grade = is_scalar($gradeId) ? EducationalGrade::with('educationalStage')->availableForRegistration()->find($gradeId) : null;
+        $requirements = StudentApplication::registrationRequirements($grade?->educationalStage?->category,
+            is_string($registrationType) ? $registrationType : null, $grade?->code);
 
         return [
             'student_name' => ['bail', 'required', 'string', 'max:150', 'regex:/^[\x{0621}-\x{063A}\x{0641}-\x{065F}\x{0670}-\x{06D3}]+(?: [\x{0621}-\x{063A}\x{0641}-\x{065F}\x{0670}-\x{06D3}]+){2,}$/u'],
             'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today'],
-            'educational_stage_id' => ['required', 'integer', Rule::exists('educational_stages', 'id')->where('is_active', true)->whereIn('category', array_keys(EducationalStage::CATEGORIES))],
-            'registration_type' => ['required', 'string', Rule::in(array_keys(StudentApplication::REGISTRATION_TYPES))],
+            'educational_grade_id' => ['bail', 'required', 'integer', function (string $attribute, mixed $value, Closure $fail) use ($grade): void {
+                if (! $grade || ! EducationalGrade::codeMatchesCategory($grade->code, $grade->educationalStage?->category)) {
+                    $fail('يرجى اختيار صف متاح ضمن مرحلة مصنفة.');
+                }
+            }],
+            'registration_type' => ['required', 'string', Rule::in(array_keys(StudentApplication::REGISTRATION_TYPES)),
+                function (string $attribute, mixed $value, Closure $fail) use ($grade, $requirements): void {
+                    if ($grade && $value === 'new_student' && ! $requirements['available']) {
+                        $fail($requirements['document_summary']);
+                    }
+                }],
             'guardian_name' => ['required', 'string', 'max:150'],
             'guardian_phone' => ['required', 'string', 'max:20', 'regex:/^(?:[0-9]{8}|\+?[1-9][0-9]{8,14})$/D', 'not_regex:/^0+$/D'],
             'guardian_email' => ['nullable', 'string', 'email', 'max:255'],
@@ -63,8 +72,7 @@ class StoreStudentApplicationRequest extends FormRequest
             'student_name.regex' => 'يرجى إدخال اسم الطالب الثلاثي باللغة العربية.',
             'date_of_birth.date_format' => 'يرجى إدخال تاريخ ميلاد صحيح.',
             'date_of_birth.before' => 'يجب أن يكون تاريخ الميلاد سابقاً لليوم.',
-            'educational_stage_id.integer' => 'يرجى اختيار مرحلة تعليمية متاحة.',
-            'educational_stage_id.exists' => 'يرجى اختيار مرحلة تعليمية متاحة.',
+            'educational_grade_id.integer' => 'يرجى اختيار صف متاح ضمن مرحلة مصنفة.',
             'registration_type.in' => 'يرجى اختيار حالة طالب صحيحة.',
             'guardian_phone.regex' => 'يرجى إدخال رقم هاتف محلي من ٨ أرقام أو رقم دولي صحيح.',
             'guardian_phone.not_regex' => 'يرجى إدخال رقم هاتف صحيح.',
@@ -84,7 +92,7 @@ class StoreStudentApplicationRequest extends FormRequest
         return [
             'student_name' => 'اسم الطالب الثلاثي',
             'date_of_birth' => 'تاريخ الميلاد',
-            'educational_stage_id' => 'المرحلة التعليمية',
+            'educational_grade_id' => 'الصف المطلوب',
             'registration_type' => 'حالة الطالب',
             'guardian_name' => 'اسم ولي الأمر',
             'guardian_phone' => 'هاتف ولي الأمر',

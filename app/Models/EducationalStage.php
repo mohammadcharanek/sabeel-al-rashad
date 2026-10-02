@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 
 class EducationalStage extends Model
 {
@@ -37,5 +39,20 @@ class EducationalStage extends Model
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function educationalGrades(): HasMany
+    {
+        return $this->hasMany(EducationalGrade::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function (EducationalStage $stage): void {
+            if ($stage->isDirty('category') && ($stage->educationalGrades()->exists()
+                || StudentApplication::where('educational_stage_id', $stage->id)->exists())) {
+                throw ValidationException::withMessages(['category' => 'لا يمكن تغيير تصنيف مرحلة مرتبطة بصفوف أو طلبات تسجيل.']);
+            }
+        });
     }
 }

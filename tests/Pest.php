@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
 use App\Models\StudentApplication;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -54,9 +55,17 @@ function something()
 /** @param array<string, mixed> $overrides */
 function registrationData(array $overrides = []): array
 {
+    if (! array_key_exists('educational_grade_id', $overrides)) {
+        $stage = isset($overrides['educational_stage_id']) ? EducationalStage::find($overrides['educational_stage_id']) : null;
+        $grade = $stage
+            ? EducationalGrade::factory()->for($stage, 'educationalStage')->create(['code' => $stage->category === 'kindergarten' ? 'kg2' : 'grade_1'])
+            : EducationalGrade::factory()->create();
+        $overrides['educational_grade_id'] = $grade->id;
+    }
+
     return StudentApplication::factory()->raw(array_replace([
         'guardian_name' => 'محمد حسن',
         'guardian_phone' => '03 123 456',
-        'educational_stage_id' => EducationalStage::factory()->state(['category' => 'kindergarten']),
+        'educational_stage_id' => EducationalStage::factory(),
     ], $overrides));
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStudentApplicationRequest;
-use App\Models\EducationalStage;
+use App\Models\EducationalGrade;
 use App\Models\HomepageSetting;
 use App\Models\SiteSetting;
 use App\Models\StudentApplication;
@@ -18,25 +18,25 @@ class StudentApplicationController extends Controller
 {
     public function create(Request $request): Response
     {
-        $stages = EducationalStage::query()->where('is_active', true)
-            ->whereIn('category', array_keys(EducationalStage::CATEGORIES))
-            ->orderBy('sort_order')->orderBy('id')->get();
-        $requirements = $stages->mapWithKeys(fn (EducationalStage $stage): array => [
-            $stage->id => collect(StudentApplication::REGISTRATION_TYPES)->mapWithKeys(fn (string $label, string $type): array => [
-                $type => StudentApplication::registrationRequirements($stage->category, $type),
+        $grades = EducationalGrade::with('educationalStage')->availableForRegistration()
+            ->orderBy('sort_order')->orderBy('id')->get()
+            ->filter(fn (EducationalGrade $grade): bool => EducationalGrade::codeMatchesCategory($grade->code, $grade->educationalStage->category));
+        $requirements = $grades->mapWithKeys(fn (EducationalGrade $grade): array => [
+            $grade->id => collect(StudentApplication::REGISTRATION_TYPES)->mapWithKeys(fn (string $label, string $type): array => [
+                $type => StudentApplication::registrationRequirements($grade->educationalStage->category, $type, $grade->code),
             ])->all(),
         ])->all();
-        $stageId = $request->old('educational_stage_id');
+        $gradeId = $request->old('educational_grade_id');
         $registrationType = $request->old('registration_type');
         $defaultRequirements = StudentApplication::registrationRequirements(null, null);
-        $initialRequirements = is_scalar($stageId) && is_string($registrationType)
-            ? ($requirements[$stageId][$registrationType] ?? $defaultRequirements)
+        $initialRequirements = is_scalar($gradeId) && is_string($registrationType)
+            ? ($requirements[$gradeId][$registrationType] ?? $defaultRequirements)
             : $defaultRequirements;
 
         return response()->view('pages.registration', [
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
-            'stages' => $stages,
+            'grades' => $grades,
             'registrationTypes' => StudentApplication::REGISTRATION_TYPES,
             'requirements' => $requirements,
             'initialRequirements' => $initialRequirements,
@@ -47,6 +47,7 @@ class StudentApplicationController extends Controller
     public function store(StoreStudentApplicationRequest $request): RedirectResponse
     {
         $application = new StudentApplication($request->safe()->except('document'));
+        $application->educational_stage_id = EducationalGrade::findOrFail($application->educational_grade_id)->educational_stage_id;
         $documentPath = null;
 
         try {

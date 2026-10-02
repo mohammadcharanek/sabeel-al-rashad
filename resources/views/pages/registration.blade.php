@@ -19,8 +19,8 @@
             </div>
         @endif
 
-        @if ($stages->isEmpty())
-            <p role="status" class="rounded-xl border border-border-card p-6 leading-8">لا توجد مراحل متاحة للتسجيل حالياً. يرجى التواصل مع إدارة المدرسة.</p>
+        @if ($grades->isEmpty())
+            <p role="status" class="rounded-xl border border-border-card p-6 leading-8">لا توجد صفوف متاحة للتسجيل حالياً. يرجى التواصل مع إدارة المدرسة.</p>
         @else
             <form method="POST" action="{{ route('registration.store') }}" enctype="multipart/form-data" class="space-y-8" data-registration-form data-requirements="{{ json_encode($requirements) }}" data-default-requirements="{{ json_encode($defaultRequirements) }}">
                 @csrf
@@ -38,30 +38,32 @@
                                     <option value="{{ $value }}" @selected(old('registration_type') === $value)>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <p id="registration-type-help" class="mt-2 text-sm leading-7 text-text-secondary">الطالب المنتقل: طالب منتقل من مدرسة أخرى إلى ثانوية سبيل الرشاد.</p>
+                            <p id="registration-type-help" class="mt-2 text-sm leading-7 text-text-secondary">الطالب المنتقل: طالب منتقل من مدرسة أخرى إلى ثانوية سبيل الرشاد. الطالب الجديد: طالب يتقدم للالتحاق بالمدرسة للمرة الأولى، وليس طالباً حالياً في المدرسة، وليس منتقلًا من مدرسة أخرى، وليس ضمن حالة الطالب المسافر.</p>
                         </x-site.registration-field>
-                        <x-site.registration-field name="educational_stage_id" label="المرحلة التعليمية المطلوبة" required>
-                            <select id="educational_stage_id" name="educational_stage_id" required aria-invalid="{{ $errors->has('educational_stage_id') ? 'true' : 'false' }}" @if($errors->has('educational_stage_id')) aria-describedby="educational_stage_id-error" @endif class="block min-h-12 w-full min-w-0 rounded-lg border border-border-card bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
-                                <option value="">اختر المرحلة التعليمية</option>
-                                @foreach ($stages as $stage)
-                                    <option value="{{ $stage->id }}" @selected(old('educational_stage_id') == $stage->id)>{{ $stage->title }}</option>
+                        <x-site.registration-field name="educational_grade_id" label="الصف المطلوب" required>
+                            <select id="educational_grade_id" name="educational_grade_id" required aria-invalid="{{ $errors->has('educational_grade_id') ? 'true' : 'false' }}" @if($errors->has('educational_grade_id')) aria-describedby="educational_grade_id-error" @endif class="block min-h-12 w-full min-w-0 rounded-lg border border-border-card bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                <option value="">اختر الصف المطلوب</option>
+                                @foreach ($grades as $grade)
+                                    <option value="{{ $grade->id }}" @selected(old('educational_grade_id') == $grade->id)>{{ $grade->name_ar }} — {{ $grade->educationalStage->title }}</option>
                                 @endforeach
                             </select>
                         </x-site.registration-field>
                     </div>
                 </fieldset>
                 <div id="registration-requirements" role="status" aria-live="polite" aria-atomic="true" class="rounded-xl border border-border-card bg-surface-card p-4 text-sm leading-7">
+                    <h2 class="font-bold">المتطلبات الخاصة بالتسجيل</h2>
                     <p data-document-summary>{{ $initialRequirements['document_summary'] }}</p>
+                    <p data-interview-summary>{{ $initialRequirements['interview_summary'] }}</p>
                     <p data-exam-summary>{{ $initialRequirements['exam_summary'] }}</p>
                 </div>
                 <noscript>
                     <div class="space-y-4 rounded-xl border border-border-card p-4 text-sm leading-7">
-                        @foreach ($stages as $stage)
+                        @foreach ($grades as $grade)
                             <div>
-                                <h2 class="font-bold">{{ $stage->title }}</h2>
+                                <h2 class="font-bold">{{ $grade->name_ar }} — {{ $grade->educationalStage->title }}</h2>
                                 <ul class="list-inside list-disc space-y-2">
                                     @foreach ($registrationTypes as $type => $label)
-                                        <li>{{ $label }}: {{ $requirements[$stage->id][$type]['document_summary'] }} {{ $requirements[$stage->id][$type]['exam_summary'] }}</li>
+                                        <li>{{ $label }}: {{ $requirements[$grade->id][$type]['document_summary'] }} {{ $requirements[$grade->id][$type]['interview_summary'] }} {{ $requirements[$grade->id][$type]['exam_summary'] }}</li>
                                     @endforeach
                                 </ul>
                             </div>
@@ -83,8 +85,8 @@
                     <x-site.registration-field name="notes" label="ملاحظات">
                         <textarea id="notes" name="notes" rows="4" maxlength="3000" aria-invalid="{{ $errors->has('notes') ? 'true' : 'false' }}" @if($errors->has('notes')) aria-describedby="notes-error" @endif class="block w-full min-w-0 rounded-lg border border-border-card px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">{{ is_string(old('notes')) ? old('notes') : '' }}</textarea>
                     </x-site.registration-field>
-                    <p id="document-help" class="text-sm leading-7 text-text-secondary">إرفاق المستند مطلوب لجميع الطلاب بحسب المتطلبات أعلاه. ملف واحد بصيغة PDF أو JPG أو JPEG أو PNG، بحد أقصى ٥ ميغابايت. عند وجود خطأ في البيانات يرجى اختيار الملف مجدداً.</p>
-                    <x-site.registration-field name="document" label="مستند التسجيل" type="file" required accept=".pdf,.jpg,.jpeg,.png" :aria-describedby="$errors->has('document') ? 'document-help registration-requirements document-error' : 'document-help registration-requirements'" />
+                    <p id="document-help" class="text-sm leading-7 text-text-secondary">يرجى مراجعة متطلبات الإرفاق الخاصة بحالة الطالب والصف أعلاه. ملف واحد بصيغة PDF أو JPG أو JPEG أو PNG، بحد أقصى ٥ ميغابايت. عند وجود خطأ في البيانات يرجى اختيار الملف مجدداً.</p>
+                    <x-site.registration-field name="document" label="مستند التسجيل" type="file" :required="$initialRequirements['document_required'] === true" accept=".pdf,.jpg,.jpeg,.png" :aria-describedby="$errors->has('document') ? 'document-help registration-requirements document-error' : 'document-help registration-requirements'" />
                 </fieldset>
                 <button type="submit" class="min-h-12 w-full rounded-lg bg-brand-navy px-8 py-3 font-bold text-white transition hover:bg-brand-navy-dark sm:w-auto">إرسال طلب التسجيل</button>
             </form>
