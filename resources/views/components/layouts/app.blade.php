@@ -29,9 +29,11 @@
     @if ($socialImage)
         <meta property="og:image" content="{{ $socialImage }}">
     @endif
-    @if ($favicon = $siteSettings->imageUrl('favicon'))
-        <link rel="icon" href="{{ $favicon }}">
-    @endif
+    @php
+    $favicon = $siteSettings->imageUrl('favicon') ?? asset('favicon.ico');
+@endphp
+
+<link rel="icon" href="{{ $favicon }}" type="image/x-icon">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

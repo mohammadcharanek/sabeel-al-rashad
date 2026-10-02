@@ -211,7 +211,7 @@ test('settings images use the public disk including mobile hero and social image
 
     $response->assertSee('srcset="https://media.example.test/settings/mobile.jpg"', false)
         ->assertSee('<meta property="og:image" content="https://media.example.test/settings/social.jpg">', false)
-        ->assertSee('<link rel="icon" href="https://media.example.test/settings/favicon.jpg">', false)
+        ->assertSee('<link rel="icon" href="https://media.example.test/settings/favicon.jpg"', false)
         ->assertDontSee('src="http://127.0.0.1:8000/images/principal.jpg"', false);
     Storage::disk('public')->assertExists('settings/principal.jpg');
 });
