@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EducationalStages\Schemas;
 
+use App\Models\EducationalStage;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -20,6 +21,10 @@ class EducationalStageInfolist
 
                         TextEntry::make('title')
                             ->label('اسم المرحلة'),
+
+                        TextEntry::make('category')->label('تصنيف التسجيل')
+                            ->formatStateUsing(fn (string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير مصنفة')
+                            ->placeholder('غير مصنفة'),
 
                         TextEntry::make('slug')
                             ->label('الرابط المختصر')

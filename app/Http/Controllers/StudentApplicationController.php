@@ -16,12 +16,31 @@ use Throwable;
 
 class StudentApplicationController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $stages = EducationalStage::query()->where('is_active', true)
+            ->whereIn('category', array_keys(EducationalStage::CATEGORIES))
+            ->orderBy('sort_order')->orderBy('id')->get();
+        $requirements = $stages->mapWithKeys(fn (EducationalStage $stage): array => [
+            $stage->id => collect(StudentApplication::REGISTRATION_TYPES)->mapWithKeys(fn (string $label, string $type): array => [
+                $type => StudentApplication::registrationRequirements($stage->category, $type),
+            ])->all(),
+        ])->all();
+        $stageId = $request->old('educational_stage_id');
+        $registrationType = $request->old('registration_type');
+        $defaultRequirements = StudentApplication::registrationRequirements(null, null);
+        $initialRequirements = is_scalar($stageId) && is_string($registrationType)
+            ? ($requirements[$stageId][$registrationType] ?? $defaultRequirements)
+            : $defaultRequirements;
+
         return response()->view('pages.registration', [
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
-            'stages' => EducationalStage::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(),
+            'stages' => $stages,
+            'registrationTypes' => StudentApplication::REGISTRATION_TYPES,
+            'requirements' => $requirements,
+            'initialRequirements' => $initialRequirements,
+            'defaultRequirements' => $defaultRequirements,
         ])->header('Cache-Control', 'no-store, private');
     }
 

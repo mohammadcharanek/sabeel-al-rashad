@@ -78,6 +78,8 @@ test('administrators can transition between every allowed status and edit intern
         $component->fillForm(['status' => $status, 'admin_note' => 'مراجعة داخلية'])
             ->set('data.student_name', 'تعديل غير مسموح')
             ->set('data.document_path', '../secret.pdf')
+            ->set('data.registration_type', 'traveler')
+            ->set('data.entrance_exam_required', false)
             ->call('save')
             ->assertHasNoFormErrors();
         $this->assertDatabaseHas('student_applications', [
@@ -86,6 +88,7 @@ test('administrators can transition between every allowed status and edit intern
             'admin_note' => 'مراجعة داخلية',
             'student_name' => $application->student_name,
             'document_path' => null,
+            'registration_type' => $application->registration_type,
         ]);
     }
 });
@@ -156,3 +159,76 @@ test('staff can combine status and educational stage filters', function () {
         ->assertCanSeeTableRecords([$target])
         ->assertCanNotSeeTableRecords([$wrongStatus, $wrongStage]);
 });
+
+test('staff can display and filter every registration type', function (string $type, string $label) {
+    $target = StudentApplication::factory()->create(['registration_type' => $type]);
+    $other = StudentApplication::factory()->create(['registration_type' => $type === 'traveler' ? 'current_student' : 'traveler']);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ListStudentApplications::class)->filterTable('registration_type', $type)
+        ->assertCanSeeTableRecords([$target])->assertCanNotSeeTableRecords([$other])->assertSee($label);
+    Livewire::test(ViewStudentApplication::class, ['record' => $target->id])->assertSee($label)
+        ->assertDontSee(route('student-applications.document', $target), false);
+})->with([
+    ['current_student', 'طالب حالي'], ['transferred_student', 'طالب منتقل من مدرسة أخرى'], ['traveler', 'طالب مسافر'],
+]);
+
+test('exam filters match derived requirements and keep unclassified historical applications distinct', function () {
+    $primary = EducationalStage::factory()->create(['category' => 'primary']);
+    $kindergarten = EducationalStage::factory()->create(['category' => 'kindergarten']);
+    $unknown = EducationalStage::factory()->create(['category' => null]);
+    $required = StudentApplication::factory()->for($primary, 'educationalStage')->create(['registration_type' => 'transferred_student']);
+    $traveler = StudentApplication::factory()->for($primary, 'educationalStage')->create(['registration_type' => 'traveler']);
+    $exempt = StudentApplication::factory()->for($kindergarten, 'educationalStage')->create(['registration_type' => 'transferred_student']);
+    $current = StudentApplication::factory()->for($primary, 'educationalStage')->create();
+    $historical = StudentApplication::factory()->for($unknown, 'educationalStage')->create();
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', true)
+        ->assertCanSeeTableRecords([$required, $traveler])->assertCanNotSeeTableRecords([$current, $exempt, $historical]);
+    Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', false)
+        ->assertCanSeeTableRecords([$current, $exempt])->assertCanNotSeeTableRecords([$required, $traveler, $historical]);
+    Livewire::test(ListStudentApplications::class)
+        ->filterTable('registration_type', 'transferred_student')
+        ->filterTable('educational_stage_id', $primary->id)
+        ->filterTable('status', 'pending')
+        ->filterTable('entrance_exam_required', true)
+        ->assertCanSeeTableRecords([$required])->assertCanNotSeeTableRecords([$current, $traveler, $exempt, $historical]);
+
+    Livewire::test(ViewStudentApplication::class, ['record' => $historical->id])
+        ->assertSee('يلزم تصنيف المرحلة لتحديد المتطلبات')->assertSee('طالب حالي');
+    expect($historical->entrance_exam_required)->toBeNull();
+    Livewire::test(ViewStudentApplication::class, ['record' => $exempt->id])
+        ->assertSee('لا يوجد امتحان دخول لهذه المرحلة.')->assertSee('المستند المطلوب: إفادة من المدرسة أو الروضة السابقة.');
+    Livewire::test(ViewStudentApplication::class, ['record' => $required->id])
+        ->assertSee('يخضع الطالب لامتحان دخول.')->assertSee('المستند المطلوب: إفادة أو شهادة نجاح من المدرسة السابقة.');
+    Livewire::test(ViewStudentApplication::class, ['record' => $current->id])
+        ->assertSee('لا يخضع الطالب الحالي لامتحان دخول.');
+});
+
+test('exam filters and table cells follow all registration cases without changing stored applications', function (string $category, bool $transferredExam) {
+    $stage = EducationalStage::factory()->create(['category' => $category]);
+    $current = StudentApplication::factory()->for($stage, 'educationalStage')->create();
+    $transferred = StudentApplication::factory()->for($stage, 'educationalStage')->create(['registration_type' => 'transferred_student']);
+    $traveler = StudentApplication::factory()->for($stage, 'educationalStage')->create(['registration_type' => 'traveler']);
+    $original = StudentApplication::orderBy('id')->get()->map->getRawOriginal()->all();
+    $this->actingAs(User::factory()->admin()->create());
+    $examRequired = $transferredExam ? [$transferred, $traveler] : [$traveler];
+    $examExempt = $transferredExam ? [$current] : [$current, $transferred];
+
+    Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', true)
+        ->assertCanSeeTableRecords($examRequired)->assertCanNotSeeTableRecords($examExempt)
+        ->assertTableColumnStateSet('exam_requirement', 'مطلوب', $traveler)
+        ->assertTableColumnStateSet('document_requirement', 'مطلوب', $traveler);
+    Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', false)
+        ->assertCanSeeTableRecords($examExempt)->assertCanNotSeeTableRecords($examRequired)
+        ->assertTableColumnStateSet('exam_requirement', 'غير مطلوب', $current)
+        ->assertTableColumnStateSet('document_requirement', 'مطلوب', $current);
+
+    expect(StudentApplication::orderBy('id')->get()->map->getRawOriginal()->all())->toBe($original);
+})->with([
+    'kindergarten' => ['kindergarten', false],
+    'primary' => ['primary', true],
+    'intermediate' => ['intermediate', true],
+    'secondary' => ['secondary', true],
+]);

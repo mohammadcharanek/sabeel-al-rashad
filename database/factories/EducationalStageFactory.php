@@ -19,7 +19,8 @@ class EducationalStageFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => Str::slug($title) . '-' . fake()->unique()->numberBetween(1000, 999999),
+            'category' => 'primary',
+            'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(1000, 999999),
             'description' => fake()->sentence(14),
             'icon' => 'elementary',
             'image' => null,

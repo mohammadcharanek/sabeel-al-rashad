@@ -18,6 +18,16 @@ class StudentApplicationInfolist
                 TextEntry::make('student_name')->label('اسم الطالب الثلاثي'),
                 TextEntry::make('date_of_birth')->label('تاريخ الميلاد')->date('Y-m-d'),
                 TextEntry::make('educationalStage.title')->label('المرحلة التعليمية'),
+                TextEntry::make('registration_type')->label('حالة الطالب')
+                    ->formatStateUsing(fn (string $state): string => StudentApplication::REGISTRATION_TYPES[$state] ?? 'غير محددة'),
+                TextEntry::make('document_requirement')->label('متطلب المستند')
+                    ->state(fn (StudentApplication $record): string => $record->document_required === null
+                        ? 'يلزم تصنيف المرحلة لتحديد المتطلبات'
+                        : StudentApplication::registrationRequirements($record->educationalStage?->category, $record->registration_type)['document_summary']),
+                TextEntry::make('exam_requirement')->label('امتحان الدخول')
+                    ->state(fn (StudentApplication $record): string => $record->entrance_exam_required === null
+                        ? 'يلزم تصنيف المرحلة لتحديد المتطلبات'
+                        : StudentApplication::registrationRequirements($record->educationalStage?->category, $record->registration_type)['exam_summary']),
             ])->columns(2)->columnSpanFull(),
             Section::make('بيانات ولي الأمر')->schema([
                 TextEntry::make('guardian_name')->label('اسم ولي الأمر'),

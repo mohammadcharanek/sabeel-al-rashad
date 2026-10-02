@@ -1,8 +1,8 @@
-@props(['name', 'label', 'required' => false, 'type' => 'text'])
+@props(['name', 'label', 'required' => false, 'type' => 'text', 'requirementText' => null])
 
 <div class="min-w-0">
     <label for="{{ $name }}" class="mb-2 block text-sm font-bold text-brand-navy">
-        {{ $label }} <span class="font-normal text-text-muted">({{ $required ? 'مطلوب' : 'اختياري' }})</span>
+        {{ $label }} <span id="{{ $name }}-requirement" class="font-normal text-text-muted">({{ $requirementText ?? ($required ? 'مطلوب' : 'اختياري') }})</span>
     </label>
     @if ($slot->isNotEmpty())
         {{ $slot }}

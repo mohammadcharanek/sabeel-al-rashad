@@ -4,6 +4,8 @@ use App\Models\EducationalStage;
 use App\Models\SiteSetting;
 use App\Models\StudentApplication;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 test('guests see an Arabic registration form with only active stages and a homepage entry point', function () {
     $stage = EducationalStage::factory()->create(['title' => 'المرحلة الابتدائية']);
@@ -36,6 +38,7 @@ test('registration keeps WhatsApp contact available without a floating form over
 });
 
 test('valid submissions generate distinct references and keep personal details off the confirmation page', function () {
+    Storage::fake('student_documents');
     $this->freezeTime();
     $data = registrationData([
         'guardian_email' => 'guardian@example.test',
@@ -44,6 +47,8 @@ test('valid submissions generate distinct references and keep personal details o
         'admin_note' => 'forged',
         'reference_number' => 'forged',
         'document_path' => '../secret.pdf',
+        'document_original_name' => 'forged.pdf',
+        'document' => UploadedFile::fake()->image('certificate.png'),
         'submitted_at' => '2000-01-01',
         'created_at' => '2000-01-01',
         'updated_at' => '2000-01-01',
@@ -63,7 +68,9 @@ test('valid submissions generate distinct references and keep personal details o
     expect($application->guardian_phone)->toBe('03123456');
     expect($application->guardian_email)->toBe('guardian@example.test');
     expect($application->admin_note)->toBeNull();
-    expect($application->document_path)->toBeNull();
+    expect($application->document_path)->toMatch('/^documents\/[a-zA-Z0-9]{40}\.png$/');
+    expect($application->document_original_name)->toBe('certificate.png');
+    Storage::disk('student_documents')->assertExists($application->document_path);
 
     $this->get(route('registration.confirmation'))
         ->assertSee($application->reference_number)
@@ -137,16 +144,19 @@ test('inactive stages cannot be submitted directly', function () {
 });
 
 test('phone formats are normalized and optional values can be omitted', function (string $input, string $expected) {
-    $this->post(route('registration.store'), registrationData(['guardian_phone' => $input]))
+    Storage::fake('student_documents');
+    $this->post(route('registration.store'), registrationData([
+        'guardian_phone' => $input, 'document' => UploadedFile::fake()->image('certificate.png'),
+    ]))
         ->assertSessionHasNoErrors();
 
     $this->assertDatabaseHas('student_applications', [
         'guardian_phone' => $expected,
         'guardian_email' => null,
         'notes' => null,
-        'document_path' => null,
         'status' => 'pending',
     ]);
+    Storage::disk('student_documents')->assertExists(StudentApplication::sole()->document_path);
 })->with([
     'local punctuation' => ['(03) 123-456', '03123456'],
     'international' => ['+961 (3) 123.456', '+9613123456'],

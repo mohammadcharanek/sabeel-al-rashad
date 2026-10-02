@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EducationalStages\Tables;
 
+use App\Models\EducationalStage;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -9,6 +10,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
@@ -30,6 +32,10 @@ class EducationalStagesTable
                     ->searchable()
                     ->sortable()
                     ->limit(45),
+
+                TextColumn::make('category')->label('تصنيف التسجيل')
+                    ->formatStateUsing(fn (string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير مصنفة')
+                    ->placeholder('غير مصنفة')->badge(),
 
                 TextColumn::make('icon')
                     ->label('الأيقونة')
@@ -80,6 +86,7 @@ class EducationalStagesTable
             ])
             ->defaultSort('sort_order')
             ->filters([
+                SelectFilter::make('category')->label('تصنيف التسجيل')->options(EducationalStage::CATEGORIES),
 
                 TernaryFilter::make('is_active')
                     ->label('حالة الظهور')

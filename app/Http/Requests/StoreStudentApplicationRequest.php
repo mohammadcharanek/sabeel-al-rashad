@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EducationalStage;
+use App\Models\StudentApplication;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -32,15 +34,23 @@ class StoreStudentApplicationRequest extends FormRequest
 
     public function rules(): array
     {
+        $stageId = $this->input('educational_stage_id');
+        $registrationType = $this->input('registration_type');
+        $category = is_scalar($stageId)
+            ? EducationalStage::query()->whereKey($stageId)->value('category')
+            : null;
+        $requirements = StudentApplication::registrationRequirements($category, is_string($registrationType) ? $registrationType : null);
+
         return [
             'student_name' => ['bail', 'required', 'string', 'max:150', 'regex:/^[\x{0621}-\x{063A}\x{0641}-\x{065F}\x{0670}-\x{06D3}]+(?: [\x{0621}-\x{063A}\x{0641}-\x{065F}\x{0670}-\x{06D3}]+){2,}$/u'],
             'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today'],
-            'educational_stage_id' => ['required', 'integer', Rule::exists('educational_stages', 'id')->where('is_active', true)],
+            'educational_stage_id' => ['required', 'integer', Rule::exists('educational_stages', 'id')->where('is_active', true)->whereIn('category', array_keys(EducationalStage::CATEGORIES))],
+            'registration_type' => ['required', 'string', Rule::in(array_keys(StudentApplication::REGISTRATION_TYPES))],
             'guardian_name' => ['required', 'string', 'max:150'],
             'guardian_phone' => ['required', 'string', 'max:20', 'regex:/^(?:[0-9]{8}|\+?[1-9][0-9]{8,14})$/D', 'not_regex:/^0+$/D'],
             'guardian_email' => ['nullable', 'string', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:3000'],
-            'document' => ['bail', 'nullable', 'file', 'max:5120', 'mimes:pdf,jpg,jpeg,png', 'mimetypes:application/pdf,image/jpeg,image/png', 'extensions:pdf,jpg,jpeg,png'],
+            'document' => ['bail', Rule::requiredIf($requirements['document_required'] === true), 'nullable', 'file', 'max:5120', 'mimes:pdf,jpg,jpeg,png', 'mimetypes:application/pdf,image/jpeg,image/png', 'extensions:pdf,jpg,jpeg,png'],
         ];
     }
 
@@ -55,10 +65,12 @@ class StoreStudentApplicationRequest extends FormRequest
             'date_of_birth.before' => 'يجب أن يكون تاريخ الميلاد سابقاً لليوم.',
             'educational_stage_id.integer' => 'يرجى اختيار مرحلة تعليمية متاحة.',
             'educational_stage_id.exists' => 'يرجى اختيار مرحلة تعليمية متاحة.',
+            'registration_type.in' => 'يرجى اختيار حالة طالب صحيحة.',
             'guardian_phone.regex' => 'يرجى إدخال رقم هاتف محلي من ٨ أرقام أو رقم دولي صحيح.',
             'guardian_phone.not_regex' => 'يرجى إدخال رقم هاتف صحيح.',
             'guardian_email.email' => 'يرجى إدخال بريد إلكتروني صحيح.',
             'document.file' => 'تعذر رفع المستند. يرجى اختيار الملف مجدداً.',
+            'document.required' => 'يرجى إرفاق المستند المطلوب للتسجيل: إفادة أو شهادة نجاح.',
             'document.uploaded' => 'تعذر رفع المستند. الحد الأقصى لحجم الملف ٥ ميغابايت.',
             'document.max' => 'يجب ألا يتجاوز حجم المستند ٥ ميغابايت.',
             'document.mimes' => 'المستند يجب أن يكون PDF أو JPG أو JPEG أو PNG.',
@@ -73,6 +85,7 @@ class StoreStudentApplicationRequest extends FormRequest
             'student_name' => 'اسم الطالب الثلاثي',
             'date_of_birth' => 'تاريخ الميلاد',
             'educational_stage_id' => 'المرحلة التعليمية',
+            'registration_type' => 'حالة الطالب',
             'guardian_name' => 'اسم ولي الأمر',
             'guardian_phone' => 'هاتف ولي الأمر',
             'guardian_email' => 'البريد الإلكتروني',

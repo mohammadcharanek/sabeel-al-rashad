@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EducationalStages\Schemas;
 
+use App\Models\EducationalStage;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EducationalStageForm
 {
@@ -30,6 +32,13 @@ class EducationalStageForm
                             ->afterStateUpdated(
                                 fn (?string $state, callable $set) => $set('slug', Str::slug($state ?? ''))
                             ),
+
+                        Select::make('category')
+                            ->label('تصنيف المرحلة للتسجيل')
+                            ->options(EducationalStage::CATEGORIES)
+                            ->rules([Rule::in(array_keys(EducationalStage::CATEGORIES))])
+                            ->required()
+                            ->helperText('يحدد متطلبات المستند وامتحان الدخول. المرحلة غير المصنفة لا تظهر في استمارة التسجيل.'),
 
                         TextInput::make('slug')
                             ->label('الرابط المختصر')

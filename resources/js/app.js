@@ -95,3 +95,32 @@ window.addEventListener('scroll', scheduleSectionUpdate, { passive: true });
 window.addEventListener('resize', scheduleSectionUpdate);
 window.addEventListener('load', scheduleSectionUpdate);
 updateCurrentSection();
+
+const registrationForm = document.querySelector('[data-registration-form]');
+
+if (registrationForm) {
+    const requirements = JSON.parse(registrationForm.dataset.requirements);
+    const defaultRequirements = JSON.parse(registrationForm.dataset.defaultRequirements);
+    const stage = registrationForm.querySelector('#educational_stage_id');
+    const registrationType = registrationForm.querySelector('#registration_type');
+    const documentInput = registrationForm.querySelector('#document');
+    const documentLabel = registrationForm.querySelector('#document-requirement');
+    const documentSummary = registrationForm.querySelector('[data-document-summary]');
+    const examSummary = registrationForm.querySelector('[data-exam-summary]');
+    const initialDocumentRequired = documentInput.required;
+
+    const updateRequirements = () => {
+        const selected = requirements[stage.value]?.[registrationType.value];
+        documentInput.required = selected?.document_required ?? initialDocumentRequired;
+        documentInput.setAttribute('aria-required', String(documentInput.required));
+        documentLabel.textContent = documentInput.required ? '(مطلوب)' : '(اختياري)';
+        documentSummary.textContent = selected?.document_summary
+            ?? defaultRequirements.document_summary;
+        examSummary.textContent = selected?.exam_summary
+            ?? defaultRequirements.exam_summary;
+    };
+
+    stage.addEventListener('change', updateRequirements);
+    registrationType.addEventListener('change', updateRequirements);
+    updateRequirements();
+}
