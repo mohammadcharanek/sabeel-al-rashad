@@ -33,16 +33,21 @@ class EducationalStagesTable
                     ->sortable()
                     ->limit(45),
 
-                TextColumn::make('category')->label('تصنيف التسجيل')
-                    ->formatStateUsing(fn (string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير مصنفة')
-                    ->placeholder('غير مصنفة')->badge(),
+                TextColumn::make('category')
+                    ->label('تصنيف التسجيل')
+                    ->formatStateUsing(
+                        fn (?string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير مصنفة'
+                    )
+                    ->placeholder('غير مصنفة')
+                    ->badge(),
 
                 TextColumn::make('icon')
                     ->label('الأيقونة')
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'elementary' => 'ابتدائية',
-                        'middle' => 'متوسطة',
-                        'secondary' => 'ثانوية',
+                        'kindergarten' => 'الروضات',
+                        'elementary' => 'المرحلة الابتدائية',
+                        'middle' => 'المرحلة المتوسطة',
+                        'secondary' => 'المرحلة الثانوية',
                         default => 'غير محددة',
                     })
                     ->badge(),
@@ -86,7 +91,10 @@ class EducationalStagesTable
             ])
             ->defaultSort('sort_order')
             ->filters([
-                SelectFilter::make('category')->label('تصنيف التسجيل')->options(EducationalStage::CATEGORIES),
+
+                SelectFilter::make('category')
+                    ->label('تصنيف التسجيل')
+                    ->options(EducationalStage::CATEGORIES),
 
                 TernaryFilter::make('is_active')
                     ->label('حالة الظهور')

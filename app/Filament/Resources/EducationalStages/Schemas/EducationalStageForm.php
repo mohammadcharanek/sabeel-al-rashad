@@ -30,15 +30,22 @@ class EducationalStageForm
                             ->maxLength(255)
                             ->live(onBlur: true)
                             ->afterStateUpdated(
-                                fn (?string $state, callable $set) => $set('slug', Str::slug($state ?? ''))
+                                fn (?string $state, callable $set) => $set(
+                                    'slug',
+                                    Str::slug($state ?? '')
+                                )
                             ),
 
                         Select::make('category')
                             ->label('تصنيف المرحلة للتسجيل')
                             ->options(EducationalStage::CATEGORIES)
-                            ->rules([Rule::in(array_keys(EducationalStage::CATEGORIES))])
+                            ->rules([
+                                Rule::in(array_keys(EducationalStage::CATEGORIES)),
+                            ])
                             ->required()
-                            ->helperText('يحدد متطلبات المستند وامتحان الدخول. المرحلة غير المصنفة لا تظهر في استمارة التسجيل.'),
+                            ->helperText(
+                                'يحدد تصنيف المرحلة لربط الصفوف وقواعد التسجيل. المرحلة غير المصنفة لا تظهر في استمارة التسجيل.'
+                            ),
 
                         TextInput::make('slug')
                             ->label('الرابط المختصر')
@@ -62,12 +69,14 @@ class EducationalStageForm
                         Select::make('icon')
                             ->label('الأيقونة')
                             ->options([
+                                'kindergarten' => 'الروضات',
                                 'elementary' => 'المرحلة الابتدائية',
                                 'middle' => 'المرحلة المتوسطة',
                                 'secondary' => 'المرحلة الثانوية',
                             ])
-                            ->default('elementary')
-                            ->required(),
+                            ->placeholder('اختر الأيقونة')
+                            ->required()
+                            ->helperText('اختر الأيقونة المناسبة للمرحلة التعليمية.'),
 
                         FileUpload::make('image')
                             ->label('صورة المرحلة')
@@ -93,7 +102,9 @@ class EducationalStageForm
                             ->label('رابط المرحلة')
                             ->maxLength(255)
                             ->url()
-                            ->rules(['url:http,https'])
+                            ->rules([
+                                'url:http,https',
+                            ])
                             ->placeholder('https://example.com/...'),
 
                     ])

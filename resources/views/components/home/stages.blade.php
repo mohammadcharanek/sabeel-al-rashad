@@ -37,7 +37,7 @@
                             '9' => '٩',
                         ]);
 
-                        $specialClass = $loop->iteration === 3
+                        $specialClass = $stages->count() === 3 && $loop->iteration === 3
                             ? 'md:col-span-2 md:w-[334px] md:justify-self-center lg:col-span-1 lg:w-auto'
                             : '';
                     @endphp

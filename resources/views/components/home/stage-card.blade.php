@@ -40,6 +40,25 @@
     >
         @switch($icon)
 
+            @case('kindergarten')
+                <svg
+                    viewBox="0 0 32 32"
+                    class="h-8 w-8"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <circle cx="16" cy="10" r="4" />
+                    <path d="M9 26c0-5 2.5-9 7-9s7 4 7 9" />
+                    <path d="M6 12h3" />
+                    <path d="M7.5 10.5v3" />
+                    <path d="M23 12h3" />
+                    <path d="M24.5 10.5v3" />
+                </svg>
+                @break
+
             @case('middle')
                 <svg
                     viewBox="0 0 32 32"
@@ -68,6 +87,20 @@
                     <path d="M8 26c0-6 2.5-10 7-10s7 4 7 10" />
                     <path d="M23 8h4" />
                     <path d="M25 6v4" />
+                </svg>
+                @break
+
+            @case('elementary')
+                <svg
+                    viewBox="0 0 32 32"
+                    class="h-8 w-8"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                >
+                    <path d="M16 5 26 10 16 15 6 10 16 5Z" />
+                    <path d="M6 15 16 20 26 15" />
+                    <path d="M6 20 16 25 26 20" />
                 </svg>
                 @break
 

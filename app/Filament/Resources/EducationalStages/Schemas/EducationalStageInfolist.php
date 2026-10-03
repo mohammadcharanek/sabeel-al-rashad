@@ -22,8 +22,11 @@ class EducationalStageInfolist
                         TextEntry::make('title')
                             ->label('اسم المرحلة'),
 
-                        TextEntry::make('category')->label('تصنيف التسجيل')
-                            ->formatStateUsing(fn (string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير مصنفة')
+                        TextEntry::make('category')
+                            ->label('تصنيف التسجيل')
+                            ->formatStateUsing(
+                                fn (?string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير مصنفة'
+                            )
                             ->placeholder('غير مصنفة'),
 
                         TextEntry::make('slug')
@@ -44,6 +47,7 @@ class EducationalStageInfolist
                         TextEntry::make('icon')
                             ->label('الأيقونة')
                             ->formatStateUsing(fn (?string $state): string => match ($state) {
+                                'kindergarten' => 'الروضات',
                                 'elementary' => 'المرحلة الابتدائية',
                                 'middle' => 'المرحلة المتوسطة',
                                 'secondary' => 'المرحلة الثانوية',
