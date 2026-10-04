@@ -7,12 +7,14 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class EducationalStagesTable
 {
@@ -43,13 +45,7 @@ class EducationalStagesTable
 
                 TextColumn::make('icon')
                     ->label('الأيقونة')
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'kindergarten' => 'الروضات',
-                        'elementary' => 'المرحلة الابتدائية',
-                        'middle' => 'المرحلة المتوسطة',
-                        'secondary' => 'المرحلة الثانوية',
-                        default => 'غير محددة',
-                    })
+                    ->formatStateUsing(fn (?string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير محددة')
                     ->badge(),
 
                 TextColumn::make('link_label')
@@ -109,7 +105,15 @@ class EducationalStagesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->before(function (DeleteBulkAction $action, Collection $records): void {
+                            foreach ($records as $record) {
+                                if ($reason = $record->deletionBlockReason()) {
+                                    Notification::make()->danger()->title('تعذر حذف المراحل المحددة')->body($reason)->send();
+                                    $action->cancel();
+                                }
+                            }
+                        }),
                 ]),
             ]);
     }

@@ -2,7 +2,7 @@
     'number',
     'title',
     'description' => null,
-    'icon' => 'elementary',
+    'icon' => 'basic',
     'href' => null,
     'linkLabel' => 'تعرف أكثر',
 ])
@@ -41,6 +41,7 @@
         @switch($icon)
 
             @case('kindergarten')
+            @case('Kindergarten Stage')
                 <svg
                     viewBox="0 0 32 32"
                     class="h-8 w-8"
@@ -60,6 +61,7 @@
                 @break
 
             @case('middle')
+            @case('intermediate')
                 <svg
                     viewBox="0 0 32 32"
                     class="h-8 w-8"
@@ -91,6 +93,9 @@
                 @break
 
             @case('elementary')
+            @case('primary')
+            @case('basic')
+            @case('Basic Education Stage')
                 <svg
                     viewBox="0 0 32 32"
                     class="h-8 w-8"

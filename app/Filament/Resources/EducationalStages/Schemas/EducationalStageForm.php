@@ -68,12 +68,8 @@ class EducationalStageForm
 
                         Select::make('icon')
                             ->label('الأيقونة')
-                            ->options([
-                                'kindergarten' => 'الروضات',
-                                'elementary' => 'المرحلة الابتدائية',
-                                'middle' => 'المرحلة المتوسطة',
-                                'secondary' => 'المرحلة الثانوية',
-                            ])
+                            ->options(EducationalStage::CATEGORIES)
+                            ->rules([Rule::in(array_keys(EducationalStage::CATEGORIES))])
                             ->placeholder('اختر الأيقونة')
                             ->required()
                             ->helperText('اختر الأيقونة المناسبة للمرحلة التعليمية.'),

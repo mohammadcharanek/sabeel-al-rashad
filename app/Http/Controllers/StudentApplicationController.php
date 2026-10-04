@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStudentApplicationRequest;
 use App\Models\EducationalGrade;
+use App\Models\EducationalStage;
 use App\Models\HomepageSetting;
 use App\Models\SiteSetting;
 use App\Models\StudentApplication;
@@ -19,6 +20,8 @@ class StudentApplicationController extends Controller
     public function create(Request $request): Response
     {
         $grades = EducationalGrade::with('educationalStage')->availableForRegistration()
+            ->orderBy(EducationalStage::select('sort_order')->whereColumn('educational_stages.id', 'educational_grades.educational_stage_id'))
+            ->orderBy('educational_stage_id')
             ->orderBy('sort_order')->orderBy('id')->get()
             ->filter(fn (EducationalGrade $grade): bool => EducationalGrade::codeMatchesCategory($grade->code, $grade->educationalStage->category));
         $requirements = $grades->mapWithKeys(fn (EducationalGrade $grade): array => [

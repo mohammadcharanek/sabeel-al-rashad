@@ -46,13 +46,7 @@ class EducationalStageInfolist
 
                         TextEntry::make('icon')
                             ->label('الأيقونة')
-                            ->formatStateUsing(fn (?string $state): string => match ($state) {
-                                'kindergarten' => 'الروضات',
-                                'elementary' => 'المرحلة الابتدائية',
-                                'middle' => 'المرحلة المتوسطة',
-                                'secondary' => 'المرحلة الثانوية',
-                                default => 'غير محددة',
-                            })
+                            ->formatStateUsing(fn (?string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير محددة')
                             ->badge(),
 
                         ImageEntry::make('image')

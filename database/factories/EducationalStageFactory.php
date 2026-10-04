@@ -19,10 +19,10 @@ class EducationalStageFactory extends Factory
 
         return [
             'title' => $title,
-            'category' => 'primary',
+            'category' => 'basic',
             'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(1000, 999999),
             'description' => fake()->sentence(14),
-            'icon' => 'elementary',
+            'icon' => fn (array $attributes): string => $attributes['category'] ?? 'basic',
             'image' => null,
             'link_label' => 'تعرف أكثر',
             'link_url' => null,

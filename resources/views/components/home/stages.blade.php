@@ -46,7 +46,7 @@
                         :number="$number"
                         :title="$stage->title"
                         :description="$stage->description"
-                        :icon="$stage->icon ?: 'elementary'"
+                        :icon="$stage->icon ?: 'basic'"
                         :href="$stage->link_url"
                         :link-label="$stage->link_label ?: 'تعرف أكثر'"
                         :class="$specialClass"

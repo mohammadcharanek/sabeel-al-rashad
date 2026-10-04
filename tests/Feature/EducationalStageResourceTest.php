@@ -3,9 +3,14 @@
 use App\Filament\Resources\EducationalStages\Pages\CreateEducationalStage;
 use App\Filament\Resources\EducationalStages\Pages\EditEducationalStage;
 use App\Filament\Resources\EducationalStages\Pages\ListEducationalStages;
+use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
+use App\Models\StudentApplication;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -20,7 +25,7 @@ test('educational stage rejects URLs that cannot fit the database or use an unsa
             'title' => 'المرحلة الابتدائية',
             'slug' => 'primary',
             'category' => 'primary',
-            'icon' => 'elementary',
+            'icon' => 'primary',
             'link_url' => $url,
         ])
         ->call('create')
@@ -50,7 +55,7 @@ test('educational stage accepts a URL at the database length boundary', function
             'title' => 'مرحلة اختبار',
             'slug' => 'test-stage',
             'category' => 'primary',
-            'icon' => 'elementary',
+            'icon' => 'primary',
             'link_url' => $url,
         ])
         ->call('create')
@@ -70,7 +75,7 @@ test('stage management rejects missing and unknown categories', function (?strin
             'title' => 'مرحلة',
             'slug' => 'stage',
             'category' => $category,
-            'icon' => 'elementary',
+            'icon' => 'primary',
         ])
         ->call('create')
         ->assertHasFormErrors([
@@ -119,7 +124,98 @@ test('staff can classify existing stages and filter categories using Arabic labe
         ->assertSee($label);
 })->with([
     ['kindergarten', 'روضات'],
+    ['basic', 'التعليم الأساسي'],
     ['primary', 'ابتدائي'],
     ['intermediate', 'متوسط'],
     ['secondary', 'ثانوي'],
 ]);
+
+test('stage deletion explains attached grades and preserves both records', function () {
+    $grade = EducationalGrade::factory()->create();
+    $stage = $grade->educationalStage;
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->callAction(DeleteAction::class)
+        ->assertNotified(Notification::make()->danger()->title('تعذر حذف المرحلة')
+            ->body('لا يمكن حذف المرحلة لأنها تحتوي على صفوف مرتبطة بها. يرجى حذف الصفوف أو نقلها إلى مرحلة أخرى أولاً.'));
+
+    $this->assertModelExists($stage);
+    $this->assertModelExists($grade);
+});
+
+test('stage deletion preserves historical applications without grades', function () {
+    $application = StudentApplication::factory()->create();
+    $stage = $application->educationalStage;
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->callAction(DeleteAction::class)
+        ->assertNotified(Notification::make()->danger()->title('تعذر حذف المرحلة')
+            ->body('لا يمكن حذف المرحلة لارتباطها بطلبات تسجيل. يمكن إخفاؤها بدلاً من حذفها للحفاظ على بيانات التسجيل.'));
+
+    $this->assertModelExists($stage);
+    $this->assertModelExists($application);
+});
+
+test('an unreferenced stage can be deleted', function () {
+    $stage = EducationalStage::factory()->create();
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->callAction(DeleteAction::class)->assertNotified();
+
+    $this->assertModelMissing($stage);
+});
+
+test('bulk deletion refuses the entire selection when any stage has dependencies', function (string $dependency) {
+    $free = EducationalStage::factory()->create();
+    $linked = $dependency === 'grade' ? EducationalGrade::factory()->create() : StudentApplication::factory()->create();
+    $stage = $linked->educationalStage;
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ListEducationalStages::class)
+        ->callTableBulkAction('delete', [$free, $stage])
+        ->assertNotified('تعذر حذف المراحل المحددة');
+
+    $this->assertModelExists($free);
+    $this->assertModelExists($stage);
+    $this->assertModelExists($linked);
+})->with(['grade', 'application']);
+
+test('bulk deletion removes only selected unreferenced stages', function () {
+    $stages = EducationalStage::factory()->count(2)->create();
+    $unselected = EducationalStage::factory()->create();
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ListEducationalStages::class)->callTableBulkAction('delete', $stages)->assertNotified();
+
+    foreach ($stages as $stage) {
+        $this->assertModelMissing($stage);
+    }
+    $this->assertModelExists($unselected);
+});
+
+test('editing legacy icons keeps a valid selection and saves a stable value', function (string $legacy, string $canonical) {
+    $stage = EducationalStage::factory()->create();
+    DB::table('educational_stages')->where('id', $stage->id)->update(['icon' => $legacy]);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->assertFormSet(['icon' => $canonical])->call('save')->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('educational_stages', ['id' => $stage->id, 'icon' => $canonical]);
+})->with([
+    ['Kindergarten Stage', 'kindergarten'], ['Basic Education Stage', 'basic'],
+    ['elementary', 'primary'], ['middle', 'intermediate'],
+]);
+
+test('stage management rejects an unknown icon', function () {
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(CreateEducationalStage::class)
+        ->fillForm(['title' => 'مرحلة', 'slug' => 'stage', 'category' => 'basic', 'icon' => 'unknown'])
+        ->call('create')->assertHasFormErrors(['icon']);
+
+    $this->assertDatabaseCount('educational_stages', 0);
+});

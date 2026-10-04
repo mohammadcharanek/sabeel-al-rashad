@@ -4,7 +4,6 @@ use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
 use App\Models\SiteSetting;
 use App\Models\StudentApplication;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -208,6 +207,7 @@ test('malformed array input renders accessible errors instead of crashing the fo
 test('referenced educational stages cannot be deleted along with student applications', function () {
     $application = StudentApplication::factory()->create();
 
-    expect(fn () => $application->educationalStage->delete())->toThrow(QueryException::class);
+    expect($application->educationalStage->delete())->toBeFalse();
+    $this->assertModelExists($application->educationalStage);
     $this->assertModelExists($application);
 });

@@ -82,7 +82,21 @@ test('new students outside kindergarten receive a clear refusal without records 
     ]))->assertSessionHasErrors(['registration_type' => 'تسجيل الطالب الجديد متاح حالياً لصفوف الروضات فقط. يرجى التواصل مع إدارة المدرسة.']);
     $this->assertDatabaseCount('student_applications', 0);
     Storage::disk('student_documents')->assertDirectoryEmpty('/');
-})->with(['primary', 'intermediate', 'secondary']);
+})->with(['basic', 'primary', 'intermediate', 'secondary']);
+
+test('registration groups grades by stage sort order then orders grades within each stage', function () {
+    $laterStage = EducationalStage::factory()->create(['sort_order' => 20]);
+    $firstStage = EducationalStage::factory()->create(['sort_order' => 10]);
+    $tiedStage = EducationalStage::factory()->create(['sort_order' => 10]);
+    $last = EducationalGrade::factory()->for($laterStage, 'educationalStage')->create(['sort_order' => 0]);
+    $second = EducationalGrade::factory()->for($firstStage, 'educationalStage')->create(['sort_order' => 20]);
+    $first = EducationalGrade::factory()->for($firstStage, 'educationalStage')->create(['sort_order' => 10]);
+    $third = EducationalGrade::factory()->for($firstStage, 'educationalStage')->create(['sort_order' => 20]);
+    $fourth = EducationalGrade::factory()->for($tiedStage, 'educationalStage')->create(['sort_order' => 0]);
+
+    $this->get(route('registration.create'))
+        ->assertViewHas('grades', fn ($grades): bool => $grades->modelKeys() === [$first->id, $second->id, $third->id, $fourth->id, $last->id]);
+});
 
 test('only active grades with a valid active classified stage are available', function (string $invalid) {
     $available = EducationalGrade::factory()->create(['name_ar' => 'صف متاح']);

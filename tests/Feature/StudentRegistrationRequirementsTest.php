@@ -30,6 +30,7 @@ test('current students and transferred kindergarten require a document but no ex
     'current kindergarten' => ['kindergarten', 'current_student'],
     'transferred kindergarten' => ['kindergarten', 'transferred_student'],
     'current primary' => ['primary', 'current_student'],
+    'current basic' => ['basic', 'current_student'],
     'current intermediate' => ['intermediate', 'current_student'],
     'current secondary' => ['secondary', 'current_student'],
 ]);
@@ -53,9 +54,11 @@ test('travelers and transferred school students require documents and exams desp
     Storage::disk('student_documents')->assertExists($application->document_path);
 })->with([
     'transferred primary' => ['primary', 'transferred_student'],
+    'transferred basic' => ['basic', 'transferred_student'],
     'transferred intermediate' => ['intermediate', 'transferred_student'],
     'transferred secondary' => ['secondary', 'transferred_student'],
     'traveler primary' => ['primary', 'traveler'],
+    'traveler basic' => ['basic', 'traveler'],
     'traveler intermediate' => ['intermediate', 'traveler'],
     'traveler secondary' => ['secondary', 'traveler'],
 ]);
