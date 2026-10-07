@@ -2,6 +2,7 @@
 
 use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
+use App\Models\EducationSystem;
 use App\Models\StudentApplication;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Tests\TestCase;
@@ -63,9 +64,18 @@ function registrationData(array $overrides = []): array
         $overrides['educational_grade_id'] = $grade->id;
     }
 
+    if (! array_key_exists('education_system_id', $overrides)) {
+        $gradeId = $overrides['educational_grade_id'];
+        $grade = is_scalar($gradeId) ? EducationalGrade::find($gradeId) : null;
+        $overrides['education_system_id'] = $grade?->educationalStage?->education_system_id
+            ?? EducationSystem::where('slug', 'lebanese')->value('id');
+    }
+
     return StudentApplication::factory()->raw(array_replace([
         'guardian_name' => 'محمد حسن',
         'guardian_phone' => '03 123 456',
+        'document_type' => ($overrides['registration_type'] ?? null) === 'traveler' ? 'foreign_statement' : 'school_statement',
+        'foreign_document_attestation_confirmed' => ($overrides['registration_type'] ?? null) === 'traveler' ? '1' : null,
         'educational_stage_id' => EducationalStage::factory(),
     ], $overrides));
 }

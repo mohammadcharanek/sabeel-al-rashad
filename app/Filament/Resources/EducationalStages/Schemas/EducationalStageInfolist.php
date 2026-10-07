@@ -22,6 +22,8 @@ class EducationalStageInfolist
                         TextEntry::make('title')
                             ->label('اسم المرحلة'),
 
+                        TextEntry::make('educationSystem.name')->label('نظام التعليم')->placeholder('غير محدد'),
+
                         TextEntry::make('category')
                             ->label('تصنيف التسجيل')
                             ->formatStateUsing(
@@ -46,7 +48,7 @@ class EducationalStageInfolist
 
                         TextEntry::make('icon')
                             ->label('الأيقونة')
-                            ->formatStateUsing(fn (?string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير محددة')
+                            ->formatStateUsing(fn (?string $state): string => EducationalStage::iconOptions()[$state] ?? 'غير محددة')
                             ->badge(),
 
                         ImageEntry::make('image')

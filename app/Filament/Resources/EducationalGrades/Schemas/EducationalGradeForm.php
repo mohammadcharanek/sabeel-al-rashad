@@ -21,20 +21,22 @@ class EducationalGradeForm
         return $schema->components([
             TextInput::make('name_ar')->label('اسم الصف')->required()->maxLength(150)->disabled($identityLocked),
             TextInput::make('code')->label('الرمز الثابت')->required()->maxLength(30)->unique(ignoreRecord: true)
-                ->regex('/\A(?:kg[123]|grade_[1-9][0-9]*)\z/')
+                ->regex('/\A(?:kg[123]|grade_[1-9][0-9]*|american_grade_(?:[1-9]|1[0-2]))\z/')
                 ->rules([
                     fn (Get $get): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get): void {
                         $stageId = $get('educational_stage_id');
-                        $category = is_scalar($stageId) ? EducationalStage::whereKey($stageId)->value('category') : null;
+                        $category = is_scalar($stageId) ? EducationalStage::classified()->whereKey($stageId)->value('category') : null;
                         if (! is_string($value) || ! EducationalGrade::codeMatchesCategory($value, $category)) {
                             $fail('رمز الصف لا يتوافق مع تصنيف المرحلة.');
                         }
                     },
                 ])
-                ->helperText('kg1 / kg2 / kg3 للروضات، وgrade_1 وما يليه للمراحل الأخرى. هوية الصف المرتبط بطلبات محمية من التعديل.')
+                ->helperText('kg1 / kg2 / kg3 للروضات، وgrade_1 وما يليه للمنهج اللبناني، وamerican_grade_1 إلى american_grade_12 للمنهج الأميركي. هوية الصف المرتبط بطلبات محمية من التعديل.')
                 ->disabled($identityLocked),
             Select::make('educational_stage_id')->label('المرحلة التعليمية')
-                ->relationship('educationalStage', 'title', modifyQueryUsing: fn (Builder $query): Builder => $query->whereIn('category', array_keys(EducationalStage::CATEGORIES)))
+                ->relationship('educationalStage', 'title', modifyQueryUsing: fn (Builder $query): Builder => $query->classified()->with('educationSystem')->orderBy('sort_order')->orderBy('id'))
+                ->getOptionLabelFromRecordUsing(fn (EducationalStage $record): string => $record->educationSystem->name.' — '.$record->title)
+                ->searchable()->preload()
                 ->required()->disabled($identityLocked),
             TextInput::make('sort_order')->label('الترتيب')->integer()->minValue(0)->default(0)->required(),
             Toggle::make('is_active')->label('متاح للتسجيل')->default(true),

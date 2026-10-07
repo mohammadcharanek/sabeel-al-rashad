@@ -5,6 +5,7 @@ use App\Filament\Resources\EducationalStages\Pages\EditEducationalStage;
 use App\Filament\Resources\EducationalStages\Pages\ListEducationalStages;
 use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
+use App\Models\EducationSystem;
 use App\Models\StudentApplication;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
@@ -219,3 +220,66 @@ test('stage management rejects an unknown icon', function () {
 
     $this->assertDatabaseCount('educational_stages', 0);
 });
+
+test('administrators create American stages and can change the system of an unused stage', function () {
+    $system = EducationSystem::factory()->american()->create();
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(CreateEducationalStage::class)->fillForm([
+        'title' => 'Middle School', 'slug' => 'american-middle', 'education_system_id' => $system->id,
+        'category' => 'middle_school', 'icon' => 'middle_school',
+    ])->call('create')->assertHasNoFormErrors();
+
+    $stage = EducationalStage::sole();
+    expect($stage->educationSystem->is($system))->toBeTrue();
+    $national = EducationSystem::where('slug', 'lebanese')->sole();
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->set('data.education_system_id', $national->id)->assertFormSet(['category' => null])
+        ->fillForm(['category' => 'intermediate'])->call('save')->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('educational_stages', ['id' => $stage->id, 'education_system_id' => $national->id, 'category' => 'intermediate']);
+});
+
+test('stage creation rejects incompatible categories and unavailable systems', function (string $invalid) {
+    $system = EducationSystem::factory()->american()->create();
+    $this->actingAs(User::factory()->admin()->create());
+    if ($invalid === 'inactive') {
+        $system->update(['is_active' => false]);
+    }
+
+    Livewire::test(CreateEducationalStage::class)->fillForm([
+        'title' => 'مرحلة', 'slug' => 'stage', 'icon' => 'primary',
+        'education_system_id' => $invalid === 'missing' ? null : ($invalid === 'unknown' ? 999999 : $system->id),
+        'category' => $invalid === 'category' ? 'primary' : 'elementary',
+    ])->call('create')->assertHasFormErrors([$invalid === 'category' ? 'category' : 'education_system_id']);
+
+    $this->assertDatabaseCount('educational_stages', 0);
+})->with(['category', 'inactive', 'missing', 'unknown']);
+
+test('stages in an inactive system remain editable without changing their system', function () {
+    $stage = EducationalStage::factory()->american()->create();
+    $stage->educationSystem->update(['is_active' => false]);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->fillForm(['title' => 'مرحلة محدثة'])->call('save')->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('educational_stages', ['id' => $stage->id, 'title' => 'مرحلة محدثة', 'education_system_id' => $stage->education_system_id]);
+});
+
+test('stage forms protect system and category when grades or historical applications exist', function (string $dependency) {
+    $linked = $dependency === 'grade' ? EducationalGrade::factory()->create() : StudentApplication::factory()->create();
+    $stage = $linked->educationalStage;
+    $american = EducationSystem::factory()->american()->create();
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(EditEducationalStage::class, ['record' => $stage->id])
+        ->assertFormFieldIsDisabled('education_system_id')->assertFormFieldIsDisabled('category')
+        ->set('data.education_system_id', $american->id)->set('data.category', 'elementary')
+        ->fillForm(['title' => 'اسم محدث'])->call('save')->assertHasNoFormErrors();
+
+    $this->assertDatabaseHas('educational_stages', [
+        'id' => $stage->id, 'education_system_id' => $stage->education_system_id, 'category' => $stage->category, 'title' => 'اسم محدث',
+    ]);
+    $this->assertModelExists($linked);
+})->with(['grade', 'application']);

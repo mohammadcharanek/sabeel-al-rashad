@@ -26,6 +26,12 @@ class EducationalGrade extends Model
 
     public static function codeMatchesCategory(?string $code, ?string $category): bool
     {
+        if (isset(EducationalStage::AMERICAN_GRADE_RANGES[$category])) {
+            [$first, $last] = EducationalStage::AMERICAN_GRADE_RANGES[$category];
+
+            return in_array($code, array_map(fn (int $number): string => 'american_grade_'.$number, range($first, $last)), true);
+        }
+
         return $category === 'kindergarten'
             ? in_array($code, self::KINDERGARTEN_CODES, true)
             : in_array($category, EducationalStage::EXAM_CATEGORIES, true)
@@ -34,8 +40,7 @@ class EducationalGrade extends Model
 
     public function scopeAvailableForRegistration(Builder $query): Builder
     {
-        return $query->where('is_active', true)->whereHas('educationalStage', fn (Builder $stage): Builder => $stage
-            ->where('is_active', true)->whereIn('category', array_keys(EducationalStage::CATEGORIES)));
+        return $query->where('is_active', true)->whereHas('educationalStage', fn (Builder $stage): Builder => $stage->availableForRegistration());
     }
 
     protected static function booted(): void
@@ -45,8 +50,9 @@ class EducationalGrade extends Model
                 throw ValidationException::withMessages(['code' => 'لا يمكن تغيير هوية صف مرتبط بطلبات تسجيل. يمكن تعديل ترتيبه أو تفعيله فقط.']);
             }
 
-            if (! self::codeMatchesCategory($grade->code, $grade->educationalStage()->value('category'))) {
-                throw ValidationException::withMessages(['code' => 'رمز الصف لا يتوافق مع تصنيف المرحلة. استخدم kg1 أو kg2 أو kg3 للروضات، وgrade_1 وما يليه للمراحل الأخرى.']);
+            $stage = $grade->educationalStage()->classified()->first();
+            if (! $stage || ! self::codeMatchesCategory($grade->code, $stage->category)) {
+                throw ValidationException::withMessages(['code' => 'رمز الصف لا يتوافق مع المرحلة ونظام التعليم.']);
             }
         });
     }

@@ -3,13 +3,17 @@
 namespace App\Filament\Resources\EducationalStages\Schemas;
 
 use App\Models\EducationalStage;
+use App\Models\EducationSystem;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -17,6 +21,13 @@ class EducationalStageForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $identityLocked = fn (?EducationalStage $record): bool => $record && ($record->educationalGrades()->exists() || $record->studentApplications()->exists());
+        $categories = function (Get $get): array {
+            $id = $get('education_system_id');
+
+            return is_scalar($id) ? (EducationSystem::find($id)?->stageCategories() ?? []) : [];
+        };
+
         return $schema
             ->components([
 
@@ -36,13 +47,23 @@ class EducationalStageForm
                                 )
                             ),
 
+                        Select::make('education_system_id')
+                            ->label('نظام التعليم')
+                            ->relationship('educationSystem', 'name', modifyQueryUsing: fn (Builder $query, ?EducationalStage $record): Builder => $query
+                                ->where(fn (Builder $systems): Builder => $systems->where('is_active', true)->orWhere('id', $record?->education_system_id))
+                                ->orderBy('sort_order')->orderBy('id'))
+                            ->default(fn (): ?int => EducationSystem::where('slug', 'lebanese')->where('is_active', true)->value('id'))
+                            ->required()->searchable()->preload()->live()->disabled($identityLocked)
+                            ->afterStateUpdated(fn (Set $set) => $set('category', null)),
+
                         Select::make('category')
                             ->label('تصنيف المرحلة للتسجيل')
-                            ->options(EducationalStage::CATEGORIES)
+                            ->options($categories)
                             ->rules([
-                                Rule::in(array_keys(EducationalStage::CATEGORIES)),
+                                fn (Get $get): mixed => Rule::in(array_keys($categories($get))),
                             ])
                             ->required()
+                            ->disabled($identityLocked)
                             ->helperText(
                                 'يحدد تصنيف المرحلة لربط الصفوف وقواعد التسجيل. المرحلة غير المصنفة لا تظهر في استمارة التسجيل.'
                             ),
@@ -68,8 +89,8 @@ class EducationalStageForm
 
                         Select::make('icon')
                             ->label('الأيقونة')
-                            ->options(EducationalStage::CATEGORIES)
-                            ->rules([Rule::in(array_keys(EducationalStage::CATEGORIES))])
+                            ->options(EducationalStage::iconOptions())
+                            ->rules([Rule::in(array_keys(EducationalStage::iconOptions()))])
                             ->placeholder('اختر الأيقونة')
                             ->required()
                             ->helperText('اختر الأيقونة المناسبة للمرحلة التعليمية.'),

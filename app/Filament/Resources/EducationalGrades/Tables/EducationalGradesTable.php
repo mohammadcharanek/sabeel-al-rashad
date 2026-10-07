@@ -17,6 +17,7 @@ class EducationalGradesTable
             TextColumn::make('name_ar')->label('الصف')->searchable(),
             TextColumn::make('code')->label('الرمز الثابت'),
             TextColumn::make('educationalStage.title')->label('المرحلة التعليمية'),
+            TextColumn::make('educationalStage.educationSystem.name')->label('نظام التعليم'),
             TextColumn::make('sort_order')->label('الترتيب')->sortable(),
             IconColumn::make('is_active')->label('متاح للتسجيل')->boolean(),
         ])->filters([

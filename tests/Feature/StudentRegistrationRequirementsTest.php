@@ -74,7 +74,7 @@ test('forged submissions cannot bypass required documents without JavaScript', f
         'document_required' => false,
         'document_path' => 'documents/forged.pdf',
         'document_original_name' => 'forged.pdf',
-    ]))->assertSessionHasErrors(['document' => 'يرجى إرفاق المستند المطلوب للتسجيل: إفادة أو شهادة نجاح.']);
+    ]))->assertSessionHasErrors(['document' => 'يرجى إرفاق المستند المطلوب وفق حالة الطالب والصف المختار.']);
 
     $this->assertDatabaseCount('student_applications', 0);
     Storage::disk('student_documents')->assertDirectoryEmpty('/');
@@ -130,9 +130,9 @@ test('registration renders server generated requirements with live feedback and 
             && $requirements[$primary->id]['traveler']['entrance_exam_required'] === true
             && $requirements[$primary->id]['current_student']['entrance_exam_required'] === false
             && $requirements[$kindergarten->id]['transferred_student']['document_required'] === true)
-        ->assertSee('المستند المطلوب: إفادة من المدرسة أو الروضة السابقة.')
+        ->assertSee('المستند المطلوب: إفادة من المدرسة السابقة.')
         ->assertSee('لا يخضع الطالب الحالي لامتحان دخول.')
-        ->assertSee('المستند المطلوب: إفادة.')
+        ->assertSee('المستند المطلوب: إفادة من البلد القادم منه الطالب مصدقة من لبنان.')
         ->assertSee('يلزم إجراء مقابلة.');
 
     expect($response->getContent())->toContain('name="educational_grade_id"');
@@ -147,7 +147,7 @@ test('required document feedback restores the chosen registration situation and 
     $this->withCookie(config('session.cookie'), $response->getCookie(config('session.cookie'))->getValue())
         ->get(route('registration.create'))
         ->assertSee('value="transferred_student" selected', false)
-        ->assertSee('المستند المطلوب: إفادة أو شهادة نجاح من المدرسة السابقة.')
+        ->assertSee('المستند المطلوب: إفادة من المدرسة السابقة.')
         ->assertSee('يخضع الطالب لامتحان دخول.')
         ->assertSee('document-help registration-requirements document-error', false);
 });
@@ -164,8 +164,8 @@ test('migrations and their rollbacks preserve historical data without assuming s
         (require database_path('migrations/2026_09_14_113313_create_educational_stages_table.php'))->up();
         (require database_path('migrations/2026_09_26_194452_create_student_applications_table.php'))->up();
         foreach ([1, 2, 3] as $id) {
-            $stage = EducationalStage::factory()->make(['id' => $id, 'title' => 'عنوان لا يحدد التصنيف '.$id]);
-            DB::table('educational_stages')->insert(collect($stage->getAttributes())->except('category')->all());
+            $stage = EducationalStage::factory()->make(['id' => $id, 'title' => 'عنوان لا يحدد التصنيف '.$id, 'education_system_id' => null]);
+            DB::table('educational_stages')->insert(collect($stage->getAttributes())->except(['category', 'education_system_id'])->all());
         }
         $legacy = StudentApplication::factory()->make([
             'educational_stage_id' => 1, 'status' => 'under_review', 'admin_note' => 'ملاحظة قديمة',

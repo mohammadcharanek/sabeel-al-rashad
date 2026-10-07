@@ -19,6 +19,7 @@ class StudentApplicationInfolist
                 TextEntry::make('date_of_birth')->label('تاريخ الميلاد')->date('Y-m-d'),
                 TextEntry::make('educationalGrade.name_ar')->label('الصف المطلوب')->placeholder('الصف غير محدد في الطلب القديم'),
                 TextEntry::make('educationalStage.title')->label('المرحلة التعليمية'),
+                TextEntry::make('educationalStage.educationSystem.name')->label('نظام التعليم')->placeholder('غير محدد في الطلب القديم'),
                 TextEntry::make('registration_type')->label('حالة الطالب')
                     ->formatStateUsing(fn (string $state): string => StudentApplication::REGISTRATION_TYPES[$state] ?? 'غير محددة'),
                 TextEntry::make('document_requirement')->label('متطلب المستند')
@@ -38,6 +39,16 @@ class StudentApplicationInfolist
                 TextEntry::make('notes')->label('ملاحظات ولي الأمر')->placeholder('لا توجد ملاحظات')->columnSpanFull(),
             ])->columns(2)->columnSpanFull(),
             Section::make('المستند والمراجعة')->schema([
+                TextEntry::make('document_type')->label('نوع المستند المصرح به')
+                    ->formatStateUsing(fn (string $state): string => StudentApplication::DOCUMENT_TYPES[$state] ?? 'غير محدد')
+                    ->placeholder('غير مسجل في الطلب القديم'),
+                TextEntry::make('foreign_document_attestation')->label('تصديق الإفادة من لبنان')
+                    ->visible(fn (StudentApplication $record): bool => $record->registration_type === 'traveler')
+                    ->state(fn (StudentApplication $record): string => match ($record->foreign_document_attestation_confirmed) {
+                        true => 'أكد مقدم الطلب التصديق من لبنان — يلزم مراجعة المستند',
+                        false => 'لم يؤكد مقدم الطلب التصديق من لبنان',
+                        null => 'غير مسجل في الطلب القديم',
+                    }),
                 TextEntry::make('document_original_name')
                     ->label('المستند المرفق')
                     ->placeholder('لا يوجد مستند')

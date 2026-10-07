@@ -11,6 +11,7 @@ use App\Models\NewsPost;
 use App\Models\SiteSetting;
 use App\Models\Statistic;
 use App\Models\Testimonial;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -41,10 +42,17 @@ class HomeController extends Controller
             ->get();
 
         $stages = EducationalStage::query()
+            ->with('educationSystem')
             ->where('is_active', true)
+            ->where(fn (Builder $query): Builder => $query->whereNull('education_system_id')
+                ->orWhereHas('educationSystem', fn (Builder $system): Builder => $system->where('is_active', true)))
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->sortBy([
+                fn (EducationalStage $a, EducationalStage $b): int => ($a->educationSystem?->sort_order ?? PHP_INT_MAX) <=> ($b->educationSystem?->sort_order ?? PHP_INT_MAX),
+                fn (EducationalStage $a, EducationalStage $b): int => ($a->education_system_id ?? PHP_INT_MAX) <=> ($b->education_system_id ?? PHP_INT_MAX),
+            ]);
 
         $statistics = Statistic::query()
             ->where('is_active', true)

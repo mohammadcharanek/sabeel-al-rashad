@@ -43,9 +43,11 @@ class EducationalStagesTable
                     ->placeholder('غير مصنفة')
                     ->badge(),
 
+                TextColumn::make('educationSystem.name')->label('نظام التعليم')->placeholder('غير محدد'),
+
                 TextColumn::make('icon')
                     ->label('الأيقونة')
-                    ->formatStateUsing(fn (?string $state): string => EducationalStage::CATEGORIES[$state] ?? 'غير محددة')
+                    ->formatStateUsing(fn (?string $state): string => EducationalStage::iconOptions()[$state] ?? 'غير محددة')
                     ->badge(),
 
                 TextColumn::make('link_label')
@@ -87,6 +89,7 @@ class EducationalStagesTable
             ])
             ->defaultSort('sort_order')
             ->filters([
+                SelectFilter::make('education_system_id')->label('نظام التعليم')->relationship('educationSystem', 'name'),
 
                 SelectFilter::make('category')
                     ->label('تصنيف التسجيل')

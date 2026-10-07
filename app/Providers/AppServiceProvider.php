@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\EducationalStage;
+use App\Models\EducationSystem;
 use App\Models\Event;
 use App\Models\Feature;
 use App\Models\GalleryItem;
@@ -32,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('manage-settings', fn (User $user): bool => $user->is_admin);
+        Gate::policy(EducationSystem::class, CmsContentPolicy::class);
 
         foreach ([NewsPost::class, Event::class, EducationalStage::class, Statistic::class, Feature::class, GalleryItem::class, MediaFolder::class, Video::class, Testimonial::class] as $model) {
             Gate::policy($model, CmsContentPolicy::class);

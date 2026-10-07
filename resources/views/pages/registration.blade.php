@@ -40,11 +40,19 @@
                             </select>
                             <p id="registration-type-help" class="mt-2 text-sm leading-7 text-text-secondary">الطالب المنتقل: طالب منتقل من مدرسة أخرى إلى ثانوية سبيل الرشاد. الطالب الجديد: طالب يتقدم للالتحاق بالمدرسة للمرة الأولى، وليس طالباً حالياً في المدرسة، وليس منتقلًا من مدرسة أخرى، وليس ضمن حالة الطالب المسافر.</p>
                         </x-site.registration-field>
+                        <x-site.registration-field name="education_system_id" label="نظام التعليم" required>
+                            <select id="education_system_id" name="education_system_id" required aria-invalid="{{ $errors->has('education_system_id') ? 'true' : 'false' }}" @if($errors->has('education_system_id')) aria-describedby="education_system_id-error" @endif class="block min-h-12 w-full min-w-0 rounded-lg border border-border-card bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                <option value="">اختر نظام التعليم</option>
+                                @foreach ($educationSystems as $system)
+                                    <option value="{{ $system->id }}" @selected(old('education_system_id', $educationSystems->count() === 1 ? $system->id : null) == $system->id)>{{ $system->name }}</option>
+                                @endforeach
+                            </select>
+                        </x-site.registration-field>
                         <x-site.registration-field name="educational_grade_id" label="الصف المطلوب" required>
                             <select id="educational_grade_id" name="educational_grade_id" required aria-invalid="{{ $errors->has('educational_grade_id') ? 'true' : 'false' }}" @if($errors->has('educational_grade_id')) aria-describedby="educational_grade_id-error" @endif class="block min-h-12 w-full min-w-0 rounded-lg border border-border-card bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
                                 <option value="">اختر الصف المطلوب</option>
                                 @foreach ($grades as $grade)
-                                    <option value="{{ $grade->id }}" @selected(old('educational_grade_id') == $grade->id)>{{ $grade->name_ar }} — {{ $grade->educationalStage->title }}</option>
+                                    <option value="{{ $grade->id }}" data-system-id="{{ $grade->educationalStage->education_system_id }}" @selected(old('educational_grade_id') == $grade->id)>{{ $grade->name_ar }} — {{ $grade->educationalStage->title }} — {{ $grade->educationalStage->educationSystem->name }}</option>
                                 @endforeach
                             </select>
                         </x-site.registration-field>
@@ -60,7 +68,7 @@
                     <div class="space-y-4 rounded-xl border border-border-card p-4 text-sm leading-7">
                         @foreach ($grades as $grade)
                             <div>
-                                <h2 class="font-bold">{{ $grade->name_ar }} — {{ $grade->educationalStage->title }}</h2>
+                                <h2 class="font-bold">{{ $grade->name_ar }} — {{ $grade->educationalStage->title }} — {{ $grade->educationalStage->educationSystem->name }}</h2>
                                 <ul class="list-inside list-disc space-y-2">
                                     @foreach ($registrationTypes as $type => $label)
                                         <li>{{ $label }}: {{ $requirements[$grade->id][$type]['document_summary'] }} {{ $requirements[$grade->id][$type]['interview_summary'] }} {{ $requirements[$grade->id][$type]['exam_summary'] }}</li>
@@ -86,6 +94,25 @@
                         <textarea id="notes" name="notes" rows="4" maxlength="3000" aria-invalid="{{ $errors->has('notes') ? 'true' : 'false' }}" @if($errors->has('notes')) aria-describedby="notes-error" @endif class="block w-full min-w-0 rounded-lg border border-border-card px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">{{ is_string(old('notes')) ? old('notes') : '' }}</textarea>
                     </x-site.registration-field>
                     <p id="document-help" class="text-sm leading-7 text-text-secondary">يرجى مراجعة متطلبات الإرفاق الخاصة بحالة الطالب والصف أعلاه. ملف واحد بصيغة PDF أو JPG أو JPEG أو PNG، بحد أقصى ٥ ميغابايت. عند وجود خطأ في البيانات يرجى اختيار الملف مجدداً.</p>
+                    <div data-document-type-field>
+                        <x-site.registration-field name="document_type" label="نوع المستند" :required="$initialRequirements['document_required'] === true">
+                            <select id="document_type" name="document_type" @required($initialRequirements['document_required'] === true) aria-invalid="{{ $errors->has('document_type') ? 'true' : 'false' }}" aria-describedby="document-help{{ $errors->has('document_type') ? ' document_type-error' : '' }}" class="block min-h-12 w-full min-w-0 rounded-lg border border-border-card bg-white px-3 py-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                <option value="">اختر نوع المستند</option>
+                                @foreach (\App\Models\StudentApplication::DOCUMENT_TYPES as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('document_type') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </x-site.registration-field>
+                    </div>
+                    <div data-attestation-field>
+                        <x-site.registration-field name="foreign_document_attestation_confirmed" label="تصديق الإفادة للطالب القادم من الخارج" :required="$initialRequirements['attestation_required'] === true">
+                            <div class="flex items-start gap-3">
+                                <input id="foreign_document_attestation_confirmed" name="foreign_document_attestation_confirmed" type="checkbox" value="1" @checked(in_array(old('foreign_document_attestation_confirmed'), [true, 1, '1', 'yes', 'on', 'true'], true)) @required($initialRequirements['attestation_required'] === true) aria-invalid="{{ $errors->has('foreign_document_attestation_confirmed') ? 'true' : 'false' }}" aria-describedby="attestation-help{{ $errors->has('foreign_document_attestation_confirmed') ? ' foreign_document_attestation_confirmed-error' : '' }}" class="mt-3 size-5 shrink-0 accent-brand-navy">
+                                <label for="foreign_document_attestation_confirmed" class="min-h-11 leading-8">أؤكد أن الإفادة من البلد القادم منه الطالب مصدقة من لبنان.</label>
+                            </div>
+                            <p id="attestation-help" class="mt-2 text-sm leading-7 text-text-secondary">هذا التأكيد مطلوب للقادمين من الخارج فقط. ستراجع الإدارة المستند والتصديق المرفق فيه.</p>
+                        </x-site.registration-field>
+                    </div>
                     <x-site.registration-field name="document" label="مستند التسجيل" type="file" :required="$initialRequirements['document_required'] === true" accept=".pdf,.jpg,.jpeg,.png" :aria-describedby="$errors->has('document') ? 'document-help registration-requirements document-error' : 'document-help registration-requirements'" />
                 </fieldset>
                 <button type="submit" class="min-h-12 w-full rounded-lg bg-brand-navy px-8 py-3 font-bold text-white transition hover:bg-brand-navy-dark sm:w-auto">إرسال طلب التسجيل</button>

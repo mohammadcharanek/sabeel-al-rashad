@@ -4,6 +4,7 @@ use App\Filament\Resources\StudentApplications\Pages\EditStudentApplication;
 use App\Filament\Resources\StudentApplications\Pages\ListStudentApplications;
 use App\Filament\Resources\StudentApplications\Pages\ViewStudentApplication;
 use App\Filament\Resources\StudentApplications\StudentApplicationResource;
+use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
 use App\Models\StudentApplication;
 use App\Models\User;
@@ -14,6 +15,31 @@ use Livewire\Livewire;
 beforeEach(function () {
     config(['app.env' => 'production']);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
+});
+
+test('American application displays and requirement filters remain readable when the system is inactive', function () {
+    $grade = EducationalGrade::factory()->american(9)->create();
+    $current = StudentApplication::factory()->create([
+        'educational_grade_id' => $grade->id, 'educational_stage_id' => $grade->educational_stage_id,
+    ]);
+    $transfer = StudentApplication::factory()->create([
+        'educational_grade_id' => $grade->id, 'educational_stage_id' => $grade->educational_stage_id,
+        'registration_type' => 'transferred_student',
+    ]);
+    $grade->educationalStage->educationSystem->update(['is_active' => false]);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', true)
+        ->assertCanSeeTableRecords([$transfer])->assertCanNotSeeTableRecords([$current])
+        ->assertTableColumnStateSet('educationalStage.educationSystem.name', 'المنهج الأميركي', $transfer);
+    Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', false)
+        ->assertCanSeeTableRecords([$current])->assertCanNotSeeTableRecords([$transfer]);
+    Livewire::test(ListStudentApplications::class)->filterTable('interview_required', false)
+        ->assertCanSeeTableRecords([$current, $transfer]);
+    Livewire::test(ListStudentApplications::class)->filterTable('interview_required', true)
+        ->assertCanNotSeeTableRecords([$current, $transfer]);
+    Livewire::test(ViewStudentApplication::class, ['record' => $transfer->id])
+        ->assertSee('المنهج الأميركي')->assertSee('Grade 9')->assertSee('يخضع الطالب لامتحان دخول.');
 });
 
 test('application list view and edit URLs enforce admin access', function (string $role) {
@@ -199,9 +225,9 @@ test('exam filters match derived requirements and keep unclassified historical a
         ->assertSee('يلزم تصنيف المرحلة لتحديد المتطلبات')->assertSee('طالب حالي');
     expect($historical->entrance_exam_required)->toBeNull();
     Livewire::test(ViewStudentApplication::class, ['record' => $exempt->id])
-        ->assertSee('لا يوجد امتحان دخول لهذه المرحلة.')->assertSee('المستند المطلوب: إفادة من المدرسة أو الروضة السابقة.');
+        ->assertSee('لا يوجد امتحان دخول لهذه المرحلة.')->assertSee('المستند المطلوب: إفادة من المدرسة السابقة.');
     Livewire::test(ViewStudentApplication::class, ['record' => $required->id])
-        ->assertSee('يخضع الطالب لامتحان دخول.')->assertSee('المستند المطلوب: إفادة أو شهادة نجاح من المدرسة السابقة.');
+        ->assertSee('يخضع الطالب لامتحان دخول.')->assertSee('المستند المطلوب: إفادة من المدرسة السابقة.');
     Livewire::test(ViewStudentApplication::class, ['record' => $current->id])
         ->assertSee('لا يخضع الطالب الحالي لامتحان دخول.');
 });
@@ -213,12 +239,13 @@ test('exam filters and table cells follow all registration cases without changin
     $traveler = StudentApplication::factory()->for($stage, 'educationalStage')->create(['registration_type' => 'traveler']);
     $original = StudentApplication::orderBy('id')->get()->map->getRawOriginal()->all();
     $this->actingAs(User::factory()->admin()->create());
-    $examRequired = $transferredExam ? [$transferred, $traveler] : [$traveler];
-    $examExempt = $transferredExam ? [$current] : [$current, $transferred];
+    $examRequired = $transferredExam ? [$transferred, $traveler] : [];
+    $examExempt = $transferredExam ? [$current] : [$current, $transferred, $traveler];
 
     Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', true)
-        ->assertCanSeeTableRecords($examRequired)->assertCanNotSeeTableRecords($examExempt)
-        ->assertTableColumnStateSet('exam_requirement', 'مطلوب', $traveler)
+        ->assertCanSeeTableRecords($examRequired)->assertCanNotSeeTableRecords($examExempt);
+    Livewire::test(ListStudentApplications::class)
+        ->assertTableColumnStateSet('exam_requirement', $transferredExam ? 'مطلوب' : 'غير مطلوب', $traveler)
         ->assertTableColumnStateSet('document_requirement', 'مطلوب', $traveler);
     Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', false)
         ->assertCanSeeTableRecords($examExempt)->assertCanNotSeeTableRecords($examRequired)

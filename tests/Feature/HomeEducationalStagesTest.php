@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\EducationalStage;
+use App\Models\EducationSystem;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -105,4 +106,22 @@ test('stage cards render canonical and legacy icons with their original artwork'
     ['intermediate', '<rect x="6" y="7" width="20" height="18" rx="2" />'],
     ['middle', '<rect x="6" y="7" width="20" height="18" rx="2" />'],
     ['secondary', '<circle cx="15" cy="10" r="4" />'],
+    ['american_elementary', '<path d="M16 5 26 10 16 15 6 10 16 5Z" />'],
+    ['middle_school', '<rect x="6" y="7" width="20" height="18" rx="2" />'],
+    ['high_school', '<circle cx="15" cy="10" r="4" />'],
 ]);
+
+test('homepage orders systems before stages and omits empty or inactive system headings', function () {
+    $national = EducationalStage::factory()->create(['title' => 'مرحلة وطنية', 'sort_order' => 0]);
+    $later = EducationalStage::factory()->american('high_school')->create(['title' => 'مرحلة أميركية أخيرة', 'sort_order' => 9]);
+    $first = EducationalStage::factory()->american()->create(['title' => 'مرحلة أميركية أولى', 'sort_order' => 1]);
+    $national->educationSystem->update(['sort_order' => 5]);
+    EducationSystem::factory()->create(['name' => 'نظام فارغ']);
+    $hidden = EducationSystem::factory()->create(['name' => 'نظام بمراحل مخفية']);
+    EducationalStage::factory()->inactive()->for($hidden)->create();
+    $inactive = EducationSystem::factory()->inactive()->create(['name' => 'نظام غير نشط']);
+    EducationalStage::factory()->for($inactive)->create(['title' => 'مرحلة نظام غير نشط']);
+
+    $this->get('/')->assertSeeInOrder(['المنهج الأميركي', $first->title, $later->title, 'المنهج اللبناني', $national->title])
+        ->assertDontSee('نظام فارغ')->assertDontSee($hidden->name)->assertDontSee($inactive->name)->assertDontSee('مرحلة نظام غير نشط');
+});

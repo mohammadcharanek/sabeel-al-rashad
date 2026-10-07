@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreStudentApplicationRequest;
 use App\Models\EducationalGrade;
 use App\Models\EducationalStage;
+use App\Models\EducationSystem;
 use App\Models\HomepageSetting;
 use App\Models\SiteSetting;
 use App\Models\StudentApplication;
@@ -19,11 +20,16 @@ class StudentApplicationController extends Controller
 {
     public function create(Request $request): Response
     {
-        $grades = EducationalGrade::with('educationalStage')->availableForRegistration()
+        $grades = EducationalGrade::with('educationalStage.educationSystem')->availableForRegistration()
             ->orderBy(EducationalStage::select('sort_order')->whereColumn('educational_stages.id', 'educational_grades.educational_stage_id'))
             ->orderBy('educational_stage_id')
             ->orderBy('sort_order')->orderBy('id')->get()
             ->filter(fn (EducationalGrade $grade): bool => EducationalGrade::codeMatchesCategory($grade->code, $grade->educationalStage->category));
+        $systems = EducationSystem::where('is_active', true)
+            ->whereIn('id', $grades->pluck('educationalStage.education_system_id')->unique())
+            ->orderBy('sort_order')->orderBy('id')->get();
+        $systemOrder = $systems->modelKeys();
+        $grades = $grades->sortBy(fn (EducationalGrade $grade): int => array_search($grade->educationalStage->education_system_id, $systemOrder, true))->values();
         $requirements = $grades->mapWithKeys(fn (EducationalGrade $grade): array => [
             $grade->id => collect(StudentApplication::REGISTRATION_TYPES)->mapWithKeys(fn (string $label, string $type): array => [
                 $type => StudentApplication::registrationRequirements($grade->educationalStage->category, $type, $grade->code),
@@ -40,6 +46,7 @@ class StudentApplicationController extends Controller
             'siteSettings' => SiteSetting::current(),
             'homepageSettings' => HomepageSetting::current(),
             'grades' => $grades,
+            'educationSystems' => $systems,
             'registrationTypes' => StudentApplication::REGISTRATION_TYPES,
             'requirements' => $requirements,
             'initialRequirements' => $initialRequirements,
@@ -49,7 +56,7 @@ class StudentApplicationController extends Controller
 
     public function store(StoreStudentApplicationRequest $request): RedirectResponse
     {
-        $application = new StudentApplication($request->safe()->except('document'));
+        $application = new StudentApplication($request->safe()->except(['document', 'education_system_id']));
         $application->educational_stage_id = EducationalGrade::findOrFail($application->educational_grade_id)->educational_stage_id;
         $documentPath = null;
 

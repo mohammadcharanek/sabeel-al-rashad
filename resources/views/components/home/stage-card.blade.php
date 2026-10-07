@@ -62,6 +62,7 @@
 
             @case('middle')
             @case('intermediate')
+            @case('middle_school')
                 <svg
                     viewBox="0 0 32 32"
                     class="h-8 w-8"
@@ -78,6 +79,7 @@
                 @break
 
             @case('secondary')
+            @case('high_school')
                 <svg
                     viewBox="0 0 32 32"
                     class="h-8 w-8"
@@ -95,6 +97,7 @@
             @case('elementary')
             @case('primary')
             @case('basic')
+            @case('american_elementary')
             @case('Basic Education Stage')
                 <svg
                     viewBox="0 0 32 32"

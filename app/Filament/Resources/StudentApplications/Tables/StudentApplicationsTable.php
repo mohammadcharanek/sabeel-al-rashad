@@ -17,7 +17,7 @@ class StudentApplicationsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['educationalStage', 'educationalGrade']))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['educationalStage.educationSystem', 'educationalGrade.educationalStage']))
             ->defaultSort('submitted_at', 'desc')
             ->columns([
                 TextColumn::make('reference_number')->label('رقم المرجع')->searchable()->copyable(),
@@ -26,6 +26,7 @@ class StudentApplicationsTable
                 TextColumn::make('guardian_phone')->label('الهاتف')->searchable(),
                 TextColumn::make('educationalGrade.name_ar')->label('الصف المطلوب')->placeholder('الصف غير محدد في الطلب القديم'),
                 TextColumn::make('educationalStage.title')->label('المرحلة التعليمية'),
+                TextColumn::make('educationalStage.educationSystem.name')->label('نظام التعليم')->placeholder('غير محدد'),
                 TextColumn::make('registration_type')->label('حالة الطالب')
                     ->formatStateUsing(fn (string $state): string => StudentApplication::REGISTRATION_TYPES[$state] ?? 'غير محددة')->badge(),
                 TextColumn::make('document_requirement')->label('متطلب المستند')

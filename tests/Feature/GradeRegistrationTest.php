@@ -20,12 +20,12 @@ dataset('kindergarten admissions', [
     'KG1 new' => ['kg1', 'new_student', false, true],
     'KG2 new' => ['kg2', 'new_student', false, true],
     'KG3 new' => ['kg3', 'new_student', false, true],
-    'KG1 transfer' => ['kg1', 'transferred_student', true, true],
-    'KG2 transfer' => ['kg2', 'transferred_student', true, true],
-    'KG3 transfer' => ['kg3', 'transferred_student', true, true],
-    'KG1 traveler' => ['kg1', 'traveler', false, true],
-    'KG2 traveler' => ['kg2', 'traveler', true, true],
-    'KG3 traveler' => ['kg3', 'traveler', true, true],
+    'KG1 transfer' => ['kg1', 'transferred_student', true, false],
+    'KG2 transfer' => ['kg2', 'transferred_student', true, false],
+    'KG3 transfer' => ['kg3', 'transferred_student', true, false],
+    'KG1 traveler' => ['kg1', 'traveler', true, false],
+    'KG2 traveler' => ['kg2', 'traveler', true, false],
+    'KG3 traveler' => ['kg3', 'traveler', true, false],
     'KG1 current' => ['kg1', 'current_student', true, false],
     'KG2 current' => ['kg2', 'current_student', true, false],
     'KG3 current' => ['kg3', 'current_student', true, false],
@@ -73,14 +73,18 @@ test('grade admission requirements are authoritative and stage is derived', func
         && $requirements[$grade->id][$type]['entrance_exam_required'] === false);
 })->with('kindergarten admissions');
 
-test('new students outside kindergarten receive a clear refusal without records or files', function (string $category) {
+test('new students can choose higher Lebanese grades and require only an interview', function (string $category) {
     Storage::fake('student_documents');
-    $grade = EducationalGrade::factory()->for(EducationalStage::factory()->create(['category' => $category]), 'educationalStage')->create();
+    $grade = EducationalGrade::factory()->for(EducationalStage::factory()->create(['category' => $category]), 'educationalStage')->create(['code' => 'grade_7']);
     $this->post(route('registration.store'), registrationData([
         'educational_grade_id' => $grade->id, 'registration_type' => 'new_student',
-        'document' => UploadedFile::fake()->image('certificate.png'),
-    ]))->assertSessionHasErrors(['registration_type' => 'تسجيل الطالب الجديد متاح حالياً لصفوف الروضات فقط. يرجى التواصل مع إدارة المدرسة.']);
-    $this->assertDatabaseCount('student_applications', 0);
+        'interview_required' => false, 'entrance_exam_required' => true,
+    ]))->assertSessionHasNoErrors()->assertRedirectToRoute('registration.confirmation');
+    $application = StudentApplication::sole();
+    expect($application->educational_grade_id)->toBe($grade->id);
+    expect($application->interview_required)->toBeTrue();
+    expect($application->entrance_exam_required)->toBeFalse();
+    expect($application->document_required)->toBeFalse();
     Storage::disk('student_documents')->assertDirectoryEmpty('/');
 })->with(['basic', 'primary', 'intermediate', 'secondary']);
 
@@ -142,12 +146,12 @@ test('grade interview and exam filters preserve applications and historical disp
     Livewire::test(ListStudentApplications::class)->filterTable('interview_required', false)
         ->assertCanSeeTableRecords([$exam, $historical])->assertCanNotSeeTableRecords([$interview]);
     Livewire::test(ListStudentApplications::class)->filterTable('entrance_exam_required', true)
-        ->assertCanSeeTableRecords([$exam, $historical])->assertCanNotSeeTableRecords([$interview]);
+        ->assertCanSeeTableRecords([$exam])->assertCanNotSeeTableRecords([$interview, $historical]);
     Livewire::test(ListStudentApplications::class)->filterTable('educational_grade_id', $grade->id)
         ->filterTable('registration_type', 'new_student')->filterTable('educational_stage_id', $grade->educational_stage_id)
         ->filterTable('status', 'pending')->assertCanSeeTableRecords([$interview])->assertCanNotSeeTableRecords([$exam, $historical]);
     Livewire::test(ViewStudentApplication::class, ['record' => $historical->id])
-        ->assertSee('الصف غير محدد في الطلب القديم')->assertSee('يخضع الطالب لامتحان دخول.');
+        ->assertSee('الصف غير محدد في الطلب القديم')->assertSee('لا يوجد امتحان دخول لهذه المرحلة.');
     Livewire::test(ViewStudentApplication::class, ['record' => $interview->id])->assertSee('يلزم إجراء مقابلة.')->assertSee('لا يلزم إرفاق إفادة.');
     expect(StudentApplication::orderBy('id')->get()->map->getRawOriginal()->all())->toBe($original);
 });

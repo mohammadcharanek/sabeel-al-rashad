@@ -6,14 +6,14 @@ use App\Models\StudentApplication;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-test('stages and compatible grades can be saved for every supported category', function (string $category) {
+test('stages and compatible grades can be saved for every national category', function (string $category) {
     $stage = EducationalStage::factory()->create(['category' => $category]);
     $grade = EducationalGrade::factory()->for($stage, 'educationalStage')
         ->create(['code' => $category === 'kindergarten' ? 'kg1' : 'grade_1']);
 
     $this->assertDatabaseHas('educational_stages', ['id' => $stage->id, 'category' => $category]);
     expect($stage->educationalGrades->sole()->is($grade))->toBeTrue();
-})->with(array_keys(EducationalStage::CATEGORIES));
+})->with(array_keys(array_diff_key(EducationalStage::CATEGORIES, EducationalStage::AMERICAN_GRADE_RANGES)));
 
 test('model writes reject unknown stage categories', function () {
     $stage = EducationalStage::factory()->create();

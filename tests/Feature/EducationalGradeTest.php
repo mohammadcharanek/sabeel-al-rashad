@@ -105,7 +105,8 @@ test('grade migrations and rollback preserve historical application fields and p
     DB::setDefaultConnection('grade_upgrade');
     try {
         foreach (['2026_09_14_113313_create_educational_stages_table.php', '2026_09_26_194452_create_student_applications_table.php',
-            '2026_10_01_230556_add_category_to_educational_stages_table.php', '2026_10_01_230558_add_registration_type_to_student_applications_table.php'] as $migration) {
+            '2026_10_01_230556_add_category_to_educational_stages_table.php', '2026_10_01_230558_add_registration_type_to_student_applications_table.php',
+            '2026_10_06_174508_create_education_systems_table.php', '2026_10_06_174509_add_education_system_id_to_educational_stages_table.php'] as $migration) {
             (require database_path('migrations/'.$migration))->up();
         }
         $application = StudentApplication::factory()->create(['document_path' => 'documents/'.str_repeat('a', 40).'.pdf', 'admin_note' => 'ملاحظة قديمة']);
@@ -126,4 +127,22 @@ test('grade migrations and rollback preserve historical application fields and p
         DB::setDefaultConnection($originalConnection);
         DB::purge('grade_upgrade');
     }
+});
+
+test('administrators manage American grades within their stage boundaries', function () {
+    $stage = EducationalStage::factory()->american('middle_school')->create();
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(CreateEducationalGrade::class)->fillForm([
+        'name_ar' => 'Grade 6', 'code' => 'american_grade_6', 'educational_stage_id' => $stage->id,
+    ])->call('create')->assertHasNoFormErrors();
+
+    $grade = EducationalGrade::sole();
+    Livewire::test(EditEducationalGrade::class, ['record' => $grade->id])
+        ->fillForm(['code' => 'american_grade_5'])->call('save')->assertHasFormErrors(['code']);
+    Livewire::test(EditEducationalGrade::class, ['record' => $grade->id])
+        ->fillForm(['sort_order' => 12, 'is_active' => false])->call('save')->assertHasNoFormErrors();
+    $this->assertDatabaseHas('educational_grades', ['id' => $grade->id, 'code' => 'american_grade_6', 'sort_order' => 12, 'is_active' => false]);
+    Livewire::test(ListEducationalGrades::class)->assertCanSeeTableRecords([$grade])
+        ->assertTableColumnStateSet('educationalStage.educationSystem.name', 'المنهج الأميركي', $grade);
 });

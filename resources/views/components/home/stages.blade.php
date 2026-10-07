@@ -16,12 +16,15 @@
 
         @if ($stages->isNotEmpty())
 
+            @foreach ($stages->groupBy('education_system_id') as $systemStages)
+            <h3 class="mt-10 text-xl font-bold text-brand-navy md:text-2xl">{{ $systemStages->first()->educationSystem?->name ?? 'مراحل تعليمية' }}</h3>
+
             <div
                 class="mt-10 grid gap-4
                        md:mt-12 md:grid-cols-2 md:gap-9
                        lg:grid-cols-3 lg:gap-[60px]"
             >
-                @foreach ($stages as $stage)
+                @foreach ($systemStages as $stage)
 
                     @php
                         $number = strtr((string) $loop->iteration, [
@@ -37,7 +40,7 @@
                             '9' => '٩',
                         ]);
 
-                        $specialClass = $stages->count() === 3 && $loop->iteration === 3
+                        $specialClass = $systemStages->count() === 3 && $loop->iteration === 3
                             ? 'md:col-span-2 md:w-[334px] md:justify-self-center lg:col-span-1 lg:w-auto'
                             : '';
                     @endphp
@@ -54,6 +57,7 @@
 
                 @endforeach
             </div>
+            @endforeach
 
         @else
 
